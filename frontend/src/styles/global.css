@@ -407,3 +407,203 @@ h2 {
     animation-duration: 3s;
   }
 }
+
+/* Appointment list (M6) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.list-card {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.filters {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.filters select,
+.search-field input {
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--line-strong);
+  padding: 0 14px;
+  font: inherit;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.search-field {
+  flex: 1 1 260px;
+  position: relative;
+  color: var(--ink-faint);
+}
+
+.search-field svg {
+  position: absolute;
+  left: 14px;
+  top: 15px;
+}
+
+.search-field input {
+  width: 100%;
+  padding-left: 42px;
+}
+
+.chips {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.chips legend {
+  float: left;
+  padding: 0;
+  margin-right: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.chip {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chip:has(input:focus-visible) {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.chip-on {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand-dark);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-top: 1px solid var(--line);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #eaf0ef;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.table .strong {
+  font-weight: 700;
+}
+
+.table .strong a {
+  color: var(--ink);
+}
+
+.table .sub {
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.sort-btn {
+  all: unset;
+  cursor: pointer;
+  font-weight: 700;
+  text-transform: inherit;
+  letter-spacing: inherit;
+}
+
+.sort-btn:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.badge-scheduled { background: #e3ecfb; color: #1f4fa8; }
+.badge-confirmed { background: var(--brand-soft); color: var(--brand-dark); }
+.badge-completed { background: #e6f1e1; color: #2c5a1a; }
+.badge-cancelled { background: var(--danger-bg); color: #8a1f1f; }
+.badge-no_show { background: #efeae2; color: #5a4a2c; }
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.pagination [role='status'] {
+  flex-grow: 1;
+}
+
+.dim {
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.list-card .state-card {
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+}
