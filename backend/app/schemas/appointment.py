@@ -5,9 +5,17 @@ import uuid
 from datetime import UTC, datetime
 from typing import Annotated, Any, Self
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import (
+    AfterValidator,
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
-from app.models import AppointmentStatus, AppointmentType
+from app.models import AppointmentSort, AppointmentStatus, AppointmentType
 from app.schemas.common import UtcDatetime
 from app.schemas.doctor import DoctorBrief
 from app.schemas.hospital import HospitalOut
@@ -73,6 +81,30 @@ class AppointmentUpdate(BaseModel):
         if not self.model_fields_set:
             raise ValueError("Provide at least one field to update")
         return self
+
+
+class AppointmentListQuery(BaseModel):
+    """Query string of GET /appointments. Unknown parameters are rejected."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    q: str | None = Field(default=None, max_length=100)
+    doctor_id: uuid.UUID | None = None
+    hospital_id: uuid.UUID | None = None
+    status: list[AppointmentStatus] = Field(default_factory=list)
+    type: list[AppointmentType] = Field(default_factory=list)
+    date_from: AwareDatetime | None = None
+    date_to: AwareDatetime | None = None
+    sort: AppointmentSort = AppointmentSort.START_TIME
+    page: int = Field(default=1, ge=1)
+    page_size: int = Field(default=20, ge=1, le=100)
+
+    @field_validator("q")
+    @classmethod
+    def _blank_means_no_search(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value.strip() or None
 
 
 class AppointmentOut(BaseModel):

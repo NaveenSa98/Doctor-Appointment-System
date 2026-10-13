@@ -3,7 +3,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Query, Response
 
 from app.api.v1.deps import (
     CurrentUser,
@@ -13,7 +13,13 @@ from app.api.v1.deps import (
     get_optional_user,
 )
 from app.models import Appointment, User
-from app.schemas.appointment import AppointmentCreate, AppointmentOut, AppointmentUpdate
+from app.schemas.appointment import (
+    AppointmentCreate,
+    AppointmentListQuery,
+    AppointmentOut,
+    AppointmentUpdate,
+)
+from app.schemas.common import Page
 from app.services import appointment_service
 
 router = APIRouter(prefix="/appointments", tags=["appointments"])
@@ -36,6 +42,14 @@ def create_appointment(
     appointment = appointment_service.create_appointment(session, user, body, now)
     response.headers["Location"] = f"/api/v1/appointments/{appointment.id}"
     return appointment
+
+
+@router.get("", response_model=Page[AppointmentOut])
+def list_appointments(
+    query: Annotated[AppointmentListQuery, Query()], session: SessionDep, user: CurrentUser
+) -> Page[AppointmentOut]:
+    """Search, filter, sort and paginate appointments. Doctors only see their own."""
+    return appointment_service.list_appointments(session, user, query)
 
 
 @router.get("/{appointment_id}", response_model=AppointmentOut)

@@ -1,5 +1,6 @@
 """Booking rules for appointments: who may do what, and which times are bookable."""
 
+import math
 import uuid
 from datetime import datetime, timedelta
 
@@ -8,7 +9,14 @@ from sqlalchemy.orm import Session
 from app.core.errors import ForbiddenError, NotFoundError, ValidationFailed
 from app.models import Appointment, AppointmentStatus, Doctor, User, UserRole
 from app.repositories import appointment_repository, doctor_repository
-from app.schemas.appointment import AppointmentCreate, AppointmentUpdate
+from app.repositories.appointment_repository import AppointmentFilters
+from app.schemas.appointment import (
+    AppointmentCreate,
+    AppointmentListQuery,
+    AppointmentOut,
+    AppointmentUpdate,
+)
+from app.schemas.common import Page
 
 MAX_BOOKING_HORIZON = timedelta(days=730)
 
@@ -86,6 +94,34 @@ def _get_visible_by_id(session: Session, appointment_id: uuid.UUID) -> Appointme
     if appointment is None:  # pragma: no cover - the row was just written
         raise NotFoundError("Appointment not found")
     return appointment
+
+
+def list_appointments(
+    session: Session, user: User, query: AppointmentListQuery
+) -> Page[AppointmentOut]:
+    """Search, filter, sort and paginate. Doctors are always limited to their own."""
+    if query.date_from and query.date_to and query.date_from > query.date_to:
+        raise ValidationFailed("date_to", "must not be before date_from")
+    filters = AppointmentFilters(
+        q=query.q,
+        doctor_id=_own_doctor_id(user) or query.doctor_id,
+        hospital_id=query.hospital_id,
+        statuses=query.status,
+        types=query.type,
+        date_from=query.date_from,
+        date_to=query.date_to,
+    )
+    offset = (query.page - 1) * query.page_size
+    items, total = appointment_repository.search(
+        session, filters, query.sort, offset, query.page_size
+    )
+    return Page[AppointmentOut](
+        items=[AppointmentOut.model_validate(item) for item in items],
+        total=total,
+        page=query.page,
+        page_size=query.page_size,
+        pages=math.ceil(total / query.page_size),
+    )
 
 
 def get_appointment(session: Session, user: User, appointment_id: uuid.UUID) -> Appointment:
