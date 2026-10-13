@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
+import AppointmentsPage from './pages/AppointmentsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ComingSoonPage from './pages/ComingSoonPage';
 
@@ -16,7 +17,7 @@ export default function AppRoutes() {
         <Route path="book/confirmed" element={<ComingSoonPage title="Booking confirmed" />} />
         <Route path="login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="appointments" element={<ComingSoonPage title="Appointments" />} />
+          <Route path="appointments" element={<AppointmentsPage />} />
           <Route path="appointments/:id" element={<ComingSoonPage title="Appointment" />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />

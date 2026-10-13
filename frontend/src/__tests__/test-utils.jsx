@@ -1,8 +1,13 @@
 import { render } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '../hooks/AuthContext';
 import AppRoutes from '../routes';
+
+function LocationProbe() {
+  const { pathname, search } = useLocation();
+  return <output data-testid="location">{`${pathname}${search}`}</output>;
+}
 
 /** Render the real route tree at `path` with fresh providers. */
 export function renderApp(path = '/') {
@@ -12,6 +17,7 @@ export function renderApp(path = '/') {
       <AuthProvider>
         <MemoryRouter initialEntries={[path]}>
           <AppRoutes />
+          <LocationProbe />
         </MemoryRouter>
       </AuthProvider>
     </QueryClientProvider>,
