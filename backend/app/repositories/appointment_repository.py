@@ -85,10 +85,8 @@ def search(
     return list(session.scalars(statement)), total
 
 
-def count_by_status(
-    session: Session, filters: AppointmentFilters
-) -> dict[AppointmentStatus, int]:
-    """Live appointments matching the filters, counted per status (statuses with none are absent)."""
+def count_by_status(session: Session, filters: AppointmentFilters) -> dict[AppointmentStatus, int]:
+    """Count live appointments matching the filters per status (absent when zero)."""
     statement = (
         select(Appointment.status, func.count())
         .where(*_conditions(filters))

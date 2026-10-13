@@ -6,7 +6,8 @@ import AppRoutes from '../routes';
 
 function LocationProbe() {
   const { pathname, search } = useLocation();
-  return <output data-testid="location">{`${pathname}${search}`}</output>;
+  // A <div>, not <output>: <output> has the ARIA role "status", which collides with real status text.
+  return <div data-testid="location">{`${pathname}${search}`}</div>;
 }
 
 /** Render the real route tree at `path` with fresh providers. */
