@@ -1,2 +1,3 @@
 # Doctor-Appointment-System
-Web application to manage doctors' appointments 
+
+Web application to manage doctors' appointments
