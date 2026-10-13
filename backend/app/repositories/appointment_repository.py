@@ -85,6 +85,18 @@ def search(
     return list(session.scalars(statement)), total
 
 
+def count_by_status(
+    session: Session, filters: AppointmentFilters
+) -> dict[AppointmentStatus, int]:
+    """Live appointments matching the filters, counted per status (statuses with none are absent)."""
+    statement = (
+        select(Appointment.status, func.count())
+        .where(*_conditions(filters))
+        .group_by(Appointment.status)
+    )
+    return {status: count for status, count in session.execute(statement).tuples()}
+
+
 def _is_slot_conflict(exc: IntegrityError) -> bool:
     diagnostics = getattr(exc.orig, "diag", None)
     name = getattr(diagnostics, "constraint_name", None) or str(exc.orig)

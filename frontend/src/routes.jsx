@@ -5,6 +5,7 @@ import AppointmentFormPage from './pages/AppointmentFormPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import BookingConfirmedPage from './pages/BookingConfirmedPage';
 import BookingPage from './pages/BookingPage';
+import DayViewPage from './pages/DayViewPage';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -20,6 +21,7 @@ export default function AppRoutes() {
         <Route path="login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="appointments" element={<AppointmentsPage />} />
+          <Route path="appointments/day" element={<DayViewPage />} />
           <Route path="appointments/new" element={<AppointmentFormPage />} />
           <Route path="appointments/:id" element={<AppointmentFormPage />} />
         </Route>

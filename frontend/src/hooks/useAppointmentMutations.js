@@ -5,7 +5,7 @@ import { createAppointment, deleteAppointment, updateAppointment } from '../api/
 function useInvalidate() {
   const qc = useQueryClient();
   return () =>
-    Promise.all(['appointments', 'availability'].map((key) => qc.invalidateQueries({ queryKey: [key] })));
+    Promise.all(['appointments', 'appointment-stats', 'availability'].map((key) => qc.invalidateQueries({ queryKey: [key] })));
 }
 
 export function useCreateAppointment() {

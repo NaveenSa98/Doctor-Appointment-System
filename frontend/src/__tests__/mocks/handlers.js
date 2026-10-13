@@ -31,7 +31,12 @@ export const makeAppointment = (n = 1, overrides = {}) => ({
 
 export const emptyPage = () => ({ items: [], total: 0, page: 1, page_size: 20, pages: 0 });
 
-const unauthorized = () =>
+export const makeStats = (by = {}) => {
+  const by_status = { scheduled: 0, confirmed: 0, completed: 0, cancelled: 0, no_show: 0, ...by };
+  return { total: Object.values(by_status).reduce((a, b) => a + b, 0), by_status };
+};
+
+const unauthorized =() =>
   HttpResponse.json({ error: { code: 'unauthorized', message: 'Not signed in.' } }, { status: 401 });
 
 export const handlers = [
@@ -57,6 +62,7 @@ export const handlers = [
     return unauthorized();
   }),
   http.get(`${API}/appointments`, () => HttpResponse.json(emptyPage())),
+  http.get(`${API}/appointments/stats`, () => HttpResponse.json(makeStats())),
   http.get(`${API}/doctors`, () => HttpResponse.json([doctor, doctor2])),
   http.get(`${API}/hospitals`, () => HttpResponse.json([hospital, hospital2])),
   http.get(`${API}/doctors/:id/availability`, ({ params }) =>

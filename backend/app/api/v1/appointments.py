@@ -17,6 +17,8 @@ from app.schemas.appointment import (
     AppointmentCreate,
     AppointmentListQuery,
     AppointmentOut,
+    AppointmentStatsOut,
+    AppointmentStatsQuery,
     AppointmentUpdate,
 )
 from app.schemas.common import Page
@@ -50,6 +52,14 @@ def list_appointments(
 ) -> Page[AppointmentOut]:
     """Search, filter, sort and paginate appointments. Doctors only see their own."""
     return appointment_service.list_appointments(session, user, query)
+
+
+@router.get("/stats", response_model=AppointmentStatsOut)
+def appointment_stats(
+    query: Annotated[AppointmentStatsQuery, Query()], session: SessionDep, user: CurrentUser
+) -> AppointmentStatsOut:
+    """Counts per status. Declared before `/{appointment_id}` so "stats" is not read as an id."""
+    return appointment_service.appointment_stats(session, user, query)
 
 
 @router.get("/{appointment_id}", response_model=AppointmentOut)
