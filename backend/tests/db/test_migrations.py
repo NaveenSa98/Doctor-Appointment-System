@@ -1,6 +1,6 @@
 from sqlalchemy import Connection, Engine, text
 
-from tests.db.conftest import run_alembic
+from tests.db.support import run_alembic
 
 EXPECTED_TABLES = {
     "alembic_version",

@@ -32,7 +32,7 @@ Doctor-Appointment-System/
 └── .gitignore
 ```
 
-Not all of this exists yet: see the milestones in `docs/ARCHITECTURE.md` (M0 done: backend foundation).
+Not all of this exists yet: see the milestones in `docs/ARCHITECTURE.md` (M0-M2 done: backend foundation, database, auth).
 
 ## Commands
 

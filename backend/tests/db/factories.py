@@ -10,6 +10,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core.security import hash_password
 from app.models import (
     Appointment,
     AppointmentStatus,
@@ -47,10 +48,11 @@ def make_user(
     role: UserRole = UserRole.ADMIN,
     email: str | None = None,
     doctor: Doctor | None = None,
+    password: str | None = None,
 ) -> User:
     user = User(
         email=email or f"{_unique('user')}@demo.test",
-        password_hash="not-a-real-hash",
+        password_hash=hash_password(password) if password else "not-a-real-hash",
         role=role,
         doctor_id=doctor.id if doctor else None,
     )

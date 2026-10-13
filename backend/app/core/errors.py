@@ -30,12 +30,19 @@ class AppError(Exception):
         code: str,
         message: str,
         details: list[dict[str, str]] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.code = code
         self.message = message
         self.details = details
+        self.headers = headers
+
+
+def unauthorized(message: str = "Authentication required") -> AppError:
+    """A 401 that tells clients to send a Bearer token."""
+    return AppError(401, "unauthorized", message, headers={"WWW-Authenticate": "Bearer"})
 
 
 def error_response(
@@ -54,7 +61,7 @@ def error_response(
 
 async def _app_error_handler(_request: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, AppError)
-    return error_response(exc.status_code, exc.code, exc.message, exc.details)
+    return error_response(exc.status_code, exc.code, exc.message, exc.details, exc.headers)
 
 
 async def _http_error_handler(_request: Request, exc: Exception) -> JSONResponse:

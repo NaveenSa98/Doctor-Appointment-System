@@ -11,6 +11,7 @@ from app.api.v1.router import api_v1_router
 from app.core.config import Settings, get_settings
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging, register_middleware
+from app.core.ratelimit import RateLimiter
 from app.db.session import make_engine
 
 
@@ -28,6 +29,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(title="Doctor Appointment API", lifespan=lifespan)
     app.state.settings = settings
     app.state.engine = engine
+    app.state.rate_limiter = RateLimiter()
 
     register_error_handlers(app)
     register_middleware(app)

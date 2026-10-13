@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-settings",
     "alembic",
     "pwdlib[argon2]",
+    "pyjwt",
 ]
 
 [dependency-groups]

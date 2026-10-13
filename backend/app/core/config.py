@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     database_url_migrations: str | None = None
     jwt_secret: str = Field(min_length=32)
     cors_origins: str = "http://localhost:5173"
+    access_token_minutes: int = Field(default=30, ge=1)
+    login_rate_limit_per_minute: int = Field(default=10, ge=1)
 
     @field_validator("cors_origins")
     @classmethod
