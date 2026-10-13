@@ -45,7 +45,7 @@ All backend commands run from `backend/` through uv.
 - Lint/format: `uv run ruff check . && uv run ruff format .`
 - Type check: `uv run mypy`
 - Frontend: `cd frontend && npm run dev | npm test | npm run lint` (not created yet)
-- DB migrate: `uv run alembic upgrade head` (not set up yet)
+- DB migrate: `uv run alembic upgrade head`; seed demo data: `uv run python -m scripts.seed`
 
 ## Rules
 

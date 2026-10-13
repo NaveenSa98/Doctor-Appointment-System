@@ -20,7 +20,7 @@ def make_engine(settings: Settings) -> Engine:
         pool_size=5,
         max_overflow=5,
         pool_pre_ping=True,
-        connect_args={"prepare_threshold": None},
+        connect_args={"prepare_threshold": None, "connect_timeout": 5},
     )
 
 

@@ -10,6 +10,8 @@ dependencies = [
     "psycopg[binary]",
     "pydantic>=2",
     "pydantic-settings",
+    "alembic",
+    "pwdlib[argon2]",
 ]
 
 [dependency-groups]
@@ -34,7 +36,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["app"]
+files = ["app", "scripts"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     log_level: str = "INFO"
     database_url: str
+    database_url_migrations: str | None = None
     jwt_secret: str = Field(min_length=32)
     cors_origins: str = "http://localhost:5173"
 
