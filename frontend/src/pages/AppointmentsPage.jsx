@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import AppointmentFiltersfrom '../components/AppointmentFilters';
+import AppointmentFilters from '../components/AppointmentFilters';
 import AppointmentTable from '../components/AppointmentTable';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';

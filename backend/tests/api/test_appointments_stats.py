@@ -57,7 +57,9 @@ def test_admin_counts_every_status_and_skips_deleted_rows(
     assert body["by_status"] == {**ZERO, "scheduled": 3, "confirmed": 1, "cancelled": 1}
 
 
-def test_stats_with_no_appointments_are_all_zero(db_client: TestClient, db_session: Session) -> None:
+def test_stats_with_no_appointments_are_all_zero(
+    db_client: TestClient, db_session: Session
+) -> None:
     body = _get(db_client, make_user(db_session)).json()
     assert body == {"total": 0, "by_status": ZERO}
 

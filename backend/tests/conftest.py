@@ -5,8 +5,9 @@ fixtures run against a throwaway schema on Supabase and are skipped when
 DATABASE_URL_MIGRATIONS is not configured.
 """
 
+import os
 from collections.abc import Callable, Iterator
-from typing import Any
+from typing import Any, NoReturn
 
 import pytest
 from fastapi import FastAPI
@@ -59,15 +60,22 @@ def make_client() -> Callable[[Settings], TestClient]:
     return _make
 
 
+def _database_unavailable(reason: str) -> NoReturn:
+    """Skip DB tests locally; fail them in CI (REQUIRE_DB_TESTS=1) instead of skipping."""
+    if os.environ.get("REQUIRE_DB_TESTS"):
+        pytest.fail(f"{reason} (REQUIRE_DB_TESTS is set, so database tests may not be skipped)")
+    pytest.skip(reason)
+
+
 @pytest.fixture(scope="session")
 def migrations_url() -> str:
     """The session-pooler URL used for migrations and tests (from backend/.env)."""
     try:
         url = Settings().database_url_migrations
     except ValidationError:
-        pytest.skip("backend/.env is not configured")
+        _database_unavailable("backend/.env is not configured")
     if not url:
-        pytest.skip("DATABASE_URL_MIGRATIONS is not set")
+        _database_unavailable("DATABASE_URL_MIGRATIONS is not set")
     return url
 
 
