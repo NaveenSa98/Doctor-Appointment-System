@@ -28,6 +28,8 @@ jobs:
       DATABASE_URL_MIGRATIONS: ${{ secrets.DATABASE_URL_MIGRATIONS }}
       JWT_SECRET: ci-only-secret-at-least-32-characters-long
       CORS_ORIGINS: http://localhost:5173
+      # Fail (not skip) the database tests when the secret above is missing.
+      REQUIRE_DB_TESTS: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
