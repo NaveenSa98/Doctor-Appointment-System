@@ -1,0 +1,52 @@
+# Install once with:  pip install pre-commit && pre-commit install
+# Python tools run through uv so they use the versions pinned in backend/uv.lock;
+# the frontend hooks need `npm install` to have been run in frontend/.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --project backend ruff check --fix
+        language: system
+        types: [python]
+        files: ^backend/
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --project backend ruff format
+        language: system
+        types: [python]
+        files: ^backend/
+      - id: mypy
+        name: mypy
+        entry: uv run --project backend mypy
+        language: system
+        pass_filenames: false
+        types: [python]
+        files: ^backend/
+      - id: eslint
+        name: eslint
+        entry: npm --prefix frontend exec -- eslint --fix
+        language: system
+        types_or: [javascript, jsx]
+        files: ^frontend/src/
+      - id: prettier
+        name: prettier
+        entry: npm --prefix frontend exec -- prettier --write
+        language: system
+        types_or: [javascript, jsx, css, json]
+        files: ^frontend/(src|index\.html|package\.json)
