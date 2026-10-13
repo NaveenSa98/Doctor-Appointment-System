@@ -3,6 +3,7 @@ import AppointmentFiltersfrom '../components/AppointmentFilters';
 import AppointmentTable from '../components/AppointmentTable';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
+import StatsTiles from '../components/StatsTiles';
 import Pagination from '../components/Pagination';
 import Spinner from '../components/Spinner';
 import { useAuth } from '../hooks/AuthContext';
@@ -50,10 +51,16 @@ export default function AppointmentsPage() {
     <div className="container">
       <div className="page-head">
         <h1 className="page-title">Appointments</h1>
-        <Link to="/appointments/new" className="btn btn-primary">
-          New appointment
-        </Link>
+        <div className="page-actions">
+          <Link to="/appointments/day" className="btn btn-secondary">
+            Day view
+          </Link>
+          <Link to="/appointments/new" className="btn btn-primary">
+            New appointment
+          </Link>
+        </div>
       </div>
+      <StatsTiles doctorId={filters.doctor_id} />
       <section className="card list-card" aria-label="Appointment list">
         <AppointmentFilters
           filters={filters}

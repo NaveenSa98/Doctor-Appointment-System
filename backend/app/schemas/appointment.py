@@ -107,6 +107,23 @@ class AppointmentListQuery(BaseModel):
         return value.strip() or None
 
 
+class AppointmentStatsQuery(BaseModel):
+    """Query string of GET /appointments/stats. Unknown parameters are rejected."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    doctor_id: uuid.UUID | None = None
+    date_from: AwareDatetime | None = None
+    date_to: AwareDatetime | None = None
+
+
+class AppointmentStatsOut(BaseModel):
+    """Live appointment counts: the total and one count per status (zero when none)."""
+
+    total: int
+    by_status: dict[AppointmentStatus, int]
+
+
 class AppointmentOut(BaseModel):
     """An appointment with its doctor and hospital."""
 

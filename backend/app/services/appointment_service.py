@@ -14,6 +14,8 @@ from app.schemas.appointment import (
     AppointmentCreate,
     AppointmentListQuery,
     AppointmentOut,
+    AppointmentStatsOut,
+    AppointmentStatsQuery,
     AppointmentUpdate,
 )
 from app.schemas.common import Page
@@ -122,6 +124,22 @@ def list_appointments(
         page_size=query.page_size,
         pages=math.ceil(total / query.page_size),
     )
+
+
+def appointment_stats(
+    session: Session, user: User, query: AppointmentStatsQuery
+) -> AppointmentStatsOut:
+    """Counts per status for the same scope the list uses: doctors only count their own."""
+    if query.date_from and query.date_to and query.date_from > query.date_to:
+        raise ValidationFailed("date_to", "must not be before date_from")
+    filters = AppointmentFilters(
+        doctor_id=_own_doctor_id(user) or query.doctor_id,
+        date_from=query.date_from,
+        date_to=query.date_to,
+    )
+    counts = appointment_repository.count_by_status(session, filters)
+    by_status = {status: counts.get(status, 0) for status in AppointmentStatus}
+    return AppointmentStatsOut(total=sum(by_status.values()), by_status=by_status)
 
 
 def get_appointment(session: Session, user: User, appointment_id: uuid.UUID) -> Appointment:

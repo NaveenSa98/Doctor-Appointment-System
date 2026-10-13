@@ -34,3 +34,23 @@ export function formatDateTime(iso) {
     minute: '2-digit',
   }).format(new Date(iso));
 }
+
+/**
+ * UTC bounds of a local calendar day: `from` inclusive, `to` exclusive (next local midnight).
+ * @param {string} date local `YYYY-MM-DD`
+ * @returns {{ from: string, to: string }}
+ */
+export function localDayRange(date) {
+  const [y, m, d] = date.split('-').map(Number);
+  return { from: new Date(y, m - 1, d).toISOString(), to: new Date(y, m - 1, d + 1).toISOString() };
+}
+
+/** Move a local `YYYY-MM-DD` by whole days. */
+export function shiftDate(date, days) {
+  const [y, m, d] = date.split('-').map(Number);
+  const next = new Date(y, m - 1, d + days);
+  return `${next.getFullYear()}-${pad(next.getMonth() + 1)}-${pad(next.getDate())}`;
+}
+
+/** The viewer's IANA time zone, e.g. "Asia/Colombo". */
+export const localTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;

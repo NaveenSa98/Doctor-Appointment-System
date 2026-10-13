@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { formatDateTime } from '../utils/datetime';
-import StatusBadge from './StatusBadge';
+import StatusSelect from './StatusSelect';
 
 const humanize = (s) => s.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
 
@@ -45,7 +45,9 @@ export default function AppointmentTable({ items, sort, onSort }) {
               <td>{a.hospital.name}</td>
               <td>{formatDateTime(a.start_time)}</td>
               <td>{humanize(a.appointment_type)}</td>
-              <td><StatusBadge status={a.status} /></td>
+              <td>
+                <StatusSelect appointment={a} />
+              </td>
             </tr>
           ))}
         </tbody>
