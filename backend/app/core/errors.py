@@ -45,6 +45,39 @@ def unauthorized(message: str = "Authentication required") -> AppError:
     return AppError(401, "unauthorized", message, headers={"WWW-Authenticate": "Bearer"})
 
 
+class NotFoundError(AppError):
+    """The resource does not exist, or the caller may not know that it does."""
+
+    def __init__(self, message: str = "Not found") -> None:
+        super().__init__(404, "not_found", message)
+
+
+class ForbiddenError(AppError):
+    """The caller is signed in but not allowed to do this."""
+
+    def __init__(self, message: str = "You do not have access to this resource") -> None:
+        super().__init__(403, "forbidden", message)
+
+
+class SlotConflictError(AppError):
+    """The doctor already has an active appointment at that time."""
+
+    def __init__(self) -> None:
+        super().__init__(409, "slot_conflict", "The doctor already has an appointment at that time")
+
+
+class ValidationFailed(AppError):
+    """A business-rule validation failure on a single field (422)."""
+
+    def __init__(self, field: str, message: str) -> None:
+        super().__init__(
+            422,
+            "validation_error",
+            "Request validation failed",
+            [{"field": field, "message": message}],
+        )
+
+
 def error_response(
     status_code: int,
     code: str,

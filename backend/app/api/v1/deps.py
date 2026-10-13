@@ -72,3 +72,13 @@ def require_role(*roles: UserRole) -> Callable[[User], User]:
 def login_rate_limit(request: Request, settings: SettingsDep) -> None:
     """Limit login attempts per client."""
     enforce_rate_limit(request, "login", settings.login_rate_limit_per_minute)
+
+
+def booking_rate_limit(
+    request: Request,
+    settings: SettingsDep,
+    user: Annotated[User | None, Depends(get_optional_user)],
+) -> None:
+    """Limit anonymous bookings per client. Signed-in staff are not limited."""
+    if user is None:
+        enforce_rate_limit(request, "booking", settings.booking_rate_limit_per_minute)

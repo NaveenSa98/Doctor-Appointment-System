@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
     access_token_minutes: int = Field(default=30, ge=1)
     login_rate_limit_per_minute: int = Field(default=10, ge=1)
+    booking_rate_limit_per_minute: int = Field(default=10, ge=1)
 
     @field_validator("cors_origins")
     @classmethod
