@@ -1,4 +1,5 @@
-import AppointmentFilters from '../components/AppointmentFilters';
+import { Link } from 'react-router-dom';
+import AppointmentFiltersfrom '../components/AppointmentFilters';
 import AppointmentTable from '../components/AppointmentTable';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
@@ -47,7 +48,12 @@ export default function AppointmentsPage() {
 
   return (
     <div className="container">
-      <h1 className="page-title">Appointments</h1>
+      <div className="page-head">
+        <h1 className="page-title">Appointments</h1>
+        <Link to="/appointments/new" className="btn btn-primary">
+          New appointment
+        </Link>
+      </div>
       <section className="card list-card" aria-label="Appointment list">
         <AppointmentFilters
           filters={filters}
