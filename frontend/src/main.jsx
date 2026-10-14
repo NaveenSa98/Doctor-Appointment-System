@@ -9,6 +9,7 @@ import './styles/account.css';
 import './styles/admin.css';
 import './styles/schedule.css';
 import './styles/polish.css';
+import './styles/search.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
