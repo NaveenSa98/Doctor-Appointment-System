@@ -275,6 +275,13 @@ Conventions for every milestone:
 | `PUT /admin/doctors/{id}/account` | `{email?, password?}`. Both are needed to create the login; either one changes or resets it | 200 `AdminDoctor` | 404, 409 `email_taken`, 422 |
 | `DELETE /admin/doctors/{id}` | none | 204; removes the doctor and their login | 404, 409 `doctor_has_appointments` (any appointment row, even a deleted one: deactivate instead) |
 
+**Patient records for staff** (M13). A "patient" here is a *registered* patient account. Guest bookings carry only a name and are not grouped into people, so they appear in the appointment list but not here. Patients get 403 on both endpoints.
+
+| Method + path | Request | Success | Errors |
+|---|---|---|---|
+| `GET /patients` | `q?` (name or email, max 100, wildcards literal), `page`, `page_size` (1-100) | 200 `Page<{id, full_name, email, is_active, created_at, booking_count, last_booking_at}>`, ordered by name. Admin: all patients. Doctor: only patients with a live booking with them, and the numbers count only those bookings | 401, 403, 422 |
+| `GET /patients/{id}` | none | 200 the same fields plus `bookings` (latest first, at most 100, soft-deleted excluded). A doctor sees only their own bookings of that patient | 401, 403, 404 (unknown id, not a patient, or, for a doctor, no shared booking) |
+
 **Weekly sessions** (M12). A session is a recurring slot in *clinic time*: `{id, hospital, weekday (0 = Monday), start_time "HH:MM", end_time "HH:MM", skipped:[{on_date, reason}]}`. Bookable starts are every 30 minutes from `start_time` up to, not including, `end_time`. Clinic time is a fixed offset from UTC (`CLINIC_UTC_OFFSET_MINUTES`, default 0, e.g. 330 for Sri Lanka); it does not follow daylight saving.
 
 | Method + path | Request | Success | Errors |
