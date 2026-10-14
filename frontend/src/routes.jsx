@@ -2,6 +2,8 @@ import { Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import AccountPage from './pages/AccountPage';
+import AdminDoctorFormPage from './pages/AdminDoctorFormPage';
+import AdminDoctorsPage from './pages/AdminDoctorsPage';
 import AppointmentFormPage from './pages/AppointmentFormPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import BookingConfirmedPage from './pages/BookingConfirmedPage';
@@ -39,6 +41,11 @@ export default function AppRoutes() {
           <Route path="appointments/day" element={<DayViewPage />} />
           <Route path="appointments/new" element={<AppointmentFormPage />} />
           <Route path="appointments/:id" element={<AppointmentFormPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={['admin']} />}>
+          <Route path="admin/doctors" element={<AdminDoctorsPage />} />
+          <Route path="admin/doctors/new" element={<AdminDoctorFormPage />} />
+          <Route path="admin/doctors/:id" element={<AdminDoctorFormPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>

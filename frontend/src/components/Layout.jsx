@@ -28,6 +28,7 @@ export default function Layout() {
             <NavLink to="/book">Doctor Channelling</NavLink>
             {user?.role === 'patient' && <NavLink to="/my-bookings">My bookings</NavLink>}
             {user && user.role !== 'patient' && <NavLink to="/appointments">Appointments</NavLink>}
+            {user?.role === 'admin' && <NavLink to="/admin/doctors">Doctors</NavLink>}
           </nav>
           <div className="header-actions">
             {user ? (
