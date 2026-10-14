@@ -41,7 +41,7 @@ The interface is clean, calm and mobile friendly.
 
 ### Home Page
 
-![Home Page](docs/screenshots/home-page.png)
+![Home Page](docs/screenshots/home-p.png)
 
 ### Admin Dashboard
 
