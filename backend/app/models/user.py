@@ -1,4 +1,4 @@
-"""Staff user model (admins and doctors)."""
+"""User account model (admins, doctors and patients)."""
 
 import uuid
 from datetime import datetime
@@ -11,7 +11,7 @@ from app.models.enums import UserRole, enum_values
 
 
 class User(Base):
-    """A staff account. Doctor accounts are linked to a doctor profile."""
+    """An account. Doctor accounts are linked to a doctor profile."""
 
     __tablename__ = "users"
     __table_args__ = (
@@ -27,6 +27,7 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(
         Enum(UserRole, name="user_role", values_callable=enum_values)
     )
+    full_name: Mapped[str | None] = mapped_column(Text)
     doctor_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("doctors.id", ondelete="RESTRICT"), unique=True
     )

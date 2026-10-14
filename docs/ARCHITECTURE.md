@@ -259,7 +259,12 @@ Conventions for every milestone:
 |---|---|---|---|
 | `GET /health` (outside `/api/v1`) | none | 200 `{status:"ok"}` | 503 if the DB is down |
 | `POST /auth/login` | `{email, password}` | 200 `{access_token, token_type:"bearer", expires_in, user:{id,email,role,doctor_id}}` | 401 `invalid_credentials`, 422 |
-| `GET /auth/me` | none | 200 `{id,email,role,doctor_id}` | 401 |
+| `POST /auth/register` (public, rate limited) | `{full_name, email, password}` (password 8-128 chars; no role field, the account is always a `patient`) | 201, same body as login | 409 `email_taken`, 422, 429 |
+| `GET /auth/me` | none | 200 `{id,email,full_name,role,doctor_id}` | 401 |
+| `PATCH /auth/me` | any of `{full_name, email, new_password}`; `email` and `new_password` also need `current_password` | 200 user | 401, 409 `email_taken`, 422 (a wrong `current_password` is a 422 on that field, never a 401) |
+| `DELETE /auth/me` | `{password}` | 204. Patients only; their bookings stay, with `created_by` cleared | 401, 403 (staff), 422 |
+
+**Patients** (self-registered, role `patient`) can create bookings and list/read **only the bookings they made** (`created_by`); other people's bookings are a 404. They cannot PATCH or DELETE a booking, set a status, or call `/appointments/stats` (403).
 | `GET /hospitals` (public) | `doctor_id?` | 200 `[{id, name}]` | 422 |
 | `GET /doctors` (public) | `hospital_id?` | 200 `[{id, full_name, specialty, hospitals:[{id,name}]}]` (active only) | 422 |
 | `GET /doctors/{id}/availability` (public) | `date` (aware instants `date_from`, `date_to`, max 7 days) | 200 `{doctor_id, taken:[start_time,...]}` | 404, 422 |

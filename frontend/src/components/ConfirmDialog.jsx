@@ -33,7 +33,7 @@ export default function ConfirmDialog({ title, children, confirmLabel, pending, 
     <div className="dialog-backdrop">
       <div role="dialog" aria-modal="true" aria-labelledby="dialog-title" className="dialog" onKeyDown={onKeyDown}>
         <h2 id="dialog-title">{title}</h2>
-        <p>{children}</p>
+        <div className="dialog-body">{children}</div>
         <div className="dialog-actions">
           <button type="button" ref={cancelRef} className="btn btn-secondary" onClick={onCancel}>
             Cancel

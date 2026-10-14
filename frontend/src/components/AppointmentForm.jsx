@@ -20,7 +20,7 @@ export const TYPES = {
 
 const FORM_FIELDS = ['patient_name', 'doctor_id', 'hospital_id', 'start_time', 'appointment_type', 'status'];
 
-function toFormValues(initial, lockedDoctorId) {
+function toFormValues(initial, lockedDoctorId, user) {
   if (initial) {
     return {
       hospital_id: initial.hospital.id,
@@ -38,7 +38,7 @@ function toFormValues(initial, lockedDoctorId) {
     date: '',
     start_time: '',
     appointment_type: 'consultation',
-    patient_name: '',
+    patient_name: user?.role === 'patient' ? (user.full_name ?? '') : '',
     status: 'scheduled',
   };
 }
@@ -85,7 +85,7 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
     control,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm({ defaultValues: toFormValues(initial, lockedDoctorId) });
+  } = useForm({ defaultValues: toFormValues(initial, lockedDoctorId, user) });
   const [doctorId, hospitalId, date, startTime] = watch(['doctor_id', 'hospital_id', 'date', 'start_time']);
 
   const allDoctors = withCurrent(doctorsQuery.data, initial?.doctor, {
