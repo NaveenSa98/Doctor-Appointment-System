@@ -6,7 +6,8 @@ describe('public pages', () => {
   it('renders the home page without a token and with a Sign in link', () => {
     renderApp('/');
     expect(screen.queryByRole('note')).not.toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/book your doctor visit/i);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/your health, your time, our priority/i);
+    expect(screen.getByRole('link', { name: 'Book an appointment' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument();
   });
 

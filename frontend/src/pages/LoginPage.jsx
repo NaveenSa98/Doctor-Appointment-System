@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/AuthContext';
 import { errorMessage } from '../utils/errors';
+import logoUrl from '../../logo/Logo.jpeg';
 
 export default function LoginPage() {
   const { user, login } = useAuth();
@@ -33,6 +34,7 @@ export default function LoginPage() {
   return (
     <div className="container auth">
       <form className="card auth-card" onSubmit={onSubmit} noValidate>
+        <img className="auth-logo" src={logoUrl} alt="DocEase" />
         <div>
           <h1>Sign in</h1>
           <p className="muted">
