@@ -8,7 +8,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    proxy: { '/api': 'http://localhost:8000' },
+    // 127.0.0.1, not "localhost": on Windows localhost can resolve to IPv6 (::1), where uvicorn
+    // is not listening.
+    proxy: { '/api': 'http://127.0.0.1:8000' },
   },
   test: {
     environment: 'jsdom',

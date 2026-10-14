@@ -3,16 +3,19 @@ import userEvent from '@testing-library/user-event';
 import { renderApp } from './test-utils';
 
 describe('public pages', () => {
-  it('renders the home page without a token, with no banner and a Sign in link', () => {
+  it('renders the home page without a token and with a Sign in link', () => {
     renderApp('/');
     expect(screen.queryByRole('note')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/book your doctor visit/i);
     expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument();
   });
 
-  it('renders the banner on every page except home', () => {
+  it('does not render a demo banner on the login or booking pages', async () => {
     renderApp('/login');
-    expect(screen.getByRole('note')).toBeInTheDocument();
+    expect(screen.queryByRole('note')).not.toBeInTheDocument();
+    renderApp('/book');
+    expect(await screen.findByRole('heading', { name: 'Book an appointment' })).toBeInTheDocument();
+    expect(screen.queryByRole('note')).not.toBeInTheDocument();
   });
 });
 

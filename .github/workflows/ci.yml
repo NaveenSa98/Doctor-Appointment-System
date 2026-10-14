@@ -18,29 +18,49 @@ jobs:
     name: Backend (ruff, mypy, pytest)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: backend
     env:
-      # Tests use a throwaway test_<random> schema, so concurrent runs do not collide.
-      # The same Supabase session-pooler URL serves the app settings and the migrations.
       DATABASE_URL: ${{ secrets.DATABASE_URL_MIGRATIONS }}
       DATABASE_URL_MIGRATIONS: ${{ secrets.DATABASE_URL_MIGRATIONS }}
       JWT_SECRET: ci-only-secret-at-least-32-characters-long
       CORS_ORIGINS: http://localhost:5173
-      # Fail (not skip) the database tests when the secret above is missing.
       REQUIRE_DB_TESTS: "1"
     steps:
+      - name: Check the database secret is available
+        run: |
+          if [ -z "$DATABASE_URL_MIGRATIONS" ]; then
+            echo "::error::The DATABASE_URL_MIGRATIONS secret is empty or missing. Add it under Settings > Secrets and variables > Actions > Repository secrets (not Variables, and not a fork's pull request)."
+            exit 1
+          fi
+          echo "DATABASE_URL_MIGRATIONS is set."
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+
+      # subsequent steps run inside backend
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
-      - run: uv sync --frozen
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run mypy
-      - run: uv run pytest --cov=app --cov-fail-under=80
+        working-directory: backend
+
+      - name: uv sync
+        run: uv sync --frozen
+        working-directory: backend
+
+      - name: ruff check
+        run: uv run ruff check .
+        working-directory: backend
+
+      - name: ruff format check
+        run: uv run ruff format --check .
+        working-directory: backend
+
+      - name: mypy
+        run: uv run mypy
+        working-directory: backend
+
+      - name: pytest
+        run: uv run pytest --cov=app --cov-fail-under=80
+        working-directory: backend
 
   frontend:
     name: Frontend (eslint, vitest, build)
