@@ -1,6 +1,5 @@
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/AuthContext';
-import DemoBanner from './DemoBanner';
 
 function Logo() {
   return (
@@ -15,14 +14,12 @@ function Logo() {
   );
 }
 
-/** App shell: demo banner, header (Sign in or user menu) and the routed page. */
+/** App shell: header (Sign in or user menu) and the routed page. */
 export default function Layout() {
   const { user, logout } = useAuth();
-  const { pathname } = useLocation();
 
   return (
     <div className="shell">
-      {pathname !== '/' && <DemoBanner />}
       <header className="header">
         <div className="header-inner">
           <Logo />

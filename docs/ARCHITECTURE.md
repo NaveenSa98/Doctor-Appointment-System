@@ -152,7 +152,7 @@ Conventions for every milestone:
   - Login success stores the token and redirects. Login failure shows an accessible error.
   - The API client maps the error shape and clears the session on 401.
   - `datetime.js` round-trips local to UTC to local, including a DST-gap time.
-  - The demo banner is always rendered.
+  - No demo banner is rendered on any page.
 - **Risks / questions:** Plain JS has no type safety, so a JSDoc `@typedef` for the API shapes in `api/` is the mitigation.
 - **Commit:** `feat(frontend): Vite React scaffold with routing, auth and API client`
 
@@ -376,7 +376,7 @@ Per-milestone manual checks:
 - No PII in logs: log method, route template, status, duration and a request id only. Never log bodies, query strings, tokens or names. A test enforces this.
 - CORS uses an allowlist from `CORS_ORIGINS`, and the app refuses to start if it contains `*`.
 - Secrets live in `.env` (gitignored) with a committed `.env.example`. `JWT_SECRET` must be at least 32 chars. The secret scan runs in pre-commit and CI.
-- A persistent **demo banner** ("Demo only: synthetic data, do not enter real patient information") sits on every page, and the login page shows the seeded demo credentials.
+- The login page shows the seeded demo credentials. There is no demo banner in the UI; the README states that all data is synthetic.
 - Parameterized queries only (SQLAlchemy). React escapes output. Pydantic validates at the boundary.
 - Argon2 password hashing. Identical 401 for unknown user and bad password.
 - RLS on, so Supabase's public REST API is closed.

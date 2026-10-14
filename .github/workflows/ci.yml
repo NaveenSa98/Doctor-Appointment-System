@@ -31,6 +31,13 @@ jobs:
       # Fail (not skip) the database tests when the secret above is missing.
       REQUIRE_DB_TESTS: "1"
     steps:
+      - name: Check the database secret is available
+        run: |
+          if [ -z "$DATABASE_URL_MIGRATIONS" ]; then
+            echo "::error::The DATABASE_URL_MIGRATIONS secret is empty or missing. Add it under Settings > Secrets and variables > Actions > Repository secrets (not Variables, and not a fork's pull request)."
+            exit 1
+          fi
+          echo "DATABASE_URL_MIGRATIONS is set."
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
         with:
