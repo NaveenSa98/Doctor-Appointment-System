@@ -54,3 +54,21 @@ export function shiftDate(date, days) {
 
 /** The viewer's IANA time zone, e.g. "Asia/Colombo". */
 export const localTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+/**
+ * Full local date and time with the zone, for printed receipts,
+ * e.g. "Thursday, 15 October 2026, 10:30 GMT+5:30".
+ * @param {string} iso UTC ISO string
+ * @returns {string}
+ */
+export function formatFullDateTime(iso) {
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  }).format(new Date(iso));
+}

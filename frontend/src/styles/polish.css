@@ -368,3 +368,21 @@ body {
     transition: none !important;
   }
 }
+
+/* Booking confirmation */
+.receipt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.receipt-actions .btn {
+  gap: 8px;
+}
+
+.receipt-note {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}

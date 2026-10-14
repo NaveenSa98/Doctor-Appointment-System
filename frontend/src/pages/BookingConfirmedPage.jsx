@@ -1,48 +1,73 @@
+import { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import { formatDateTime } from '../utils/datetime';
+import { useAuth } from '../hooks/AuthContext';
+import { RECEIPT_MESSAGE, RECEIPT_NOTE, receiptRows } from '../utils/receipt';
+import { downloadReceipt } from '../utils/receiptPdf';
 
-/** Shows the reference id. Opened directly (no booking in state) it sends the visitor to /book. */
+/** Confirmation and receipt. Opened directly (no booking in state) it goes to /book. */
 export default function BookingConfirmedPage() {
   const appointment = useLocation().state?.appointment;
+  const { user } = useAuth();
+  const [pdf, setPdf] = useState({ pending: false, error: null });
   if (!appointment) return <Navigate to="/book" replace />;
+
+  async function onDownload() {
+    setPdf({ pending: true, error: null });
+    try {
+      await downloadReceipt(appointment);
+      setPdf({ pending: false, error: null });
+    } catch {
+      setPdf({ pending: false, error: 'Could not create the PDF. Please try again.' });
+    }
+  }
 
   return (
     <div className="container narrow">
-      <div className="card confirmed">
+      <article className="card confirmed receipt" aria-labelledby="receipt-title">
         <span className="confirmed-mark" aria-hidden="true">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 12l5 5 9-10" />
           </svg>
         </span>
-        <h1 className="page-title">You are booked</h1>
-        <p className="muted">Keep this reference number. Staff will ask for it if you need to change your visit.</p>
+        <h1 id="receipt-title" className="page-title">You are booked</h1>
+        <p className="muted">{RECEIPT_MESSAGE}</p>
         <p className="reference" aria-label="Reference number">
           {appointment.id}
         </p>
+
         <dl className="summary">
-          <div>
-            <dt>Patient</dt>
-            <dd>{appointment.patient_name}</dd>
-          </div>
-          <div>
-            <dt>Doctor</dt>
-            <dd>
-              {appointment.doctor.full_name}, {appointment.doctor.specialty}
-            </dd>
-          </div>
-          <div>
-            <dt>Hospital</dt>
-            <dd>{appointment.hospital.name}</dd>
-          </div>
-          <div>
-            <dt>When</dt>
-            <dd>{formatDateTime(appointment.start_time)}</dd>
-          </div>
+          {receiptRows(appointment).map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
         </dl>
-        <Link to="/book" className="btn btn-secondary">
-          Book another
-        </Link>
-      </div>
+
+        <p className="receipt-note">{RECEIPT_NOTE}</p>
+
+        <div className="receipt-actions">
+          <button type="button" className="btn btn-primary" onClick={onDownload} disabled={pdf.pending}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />
+            </svg>
+            {pdf.pending ? 'Preparing PDF…' : 'Download receipt (PDF)'}
+          </button>
+          <Link to="/book" className="btn btn-secondary">
+            Book another
+          </Link>
+          {user?.role === 'patient' && (
+            <Link to="/my-bookings" className="btn btn-secondary">
+              My bookings
+            </Link>
+          )}
+        </div>
+        {pdf.error && (
+          <p className="field-error" role="alert">
+            {pdf.error}
+          </p>
+        )}
+      </article>
     </div>
   );
 }

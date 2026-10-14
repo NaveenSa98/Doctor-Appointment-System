@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { deleteAccount, updateProfile } from '../api/auth';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -124,12 +124,22 @@ function DeleteAccount() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [pending, setPending] = useState(false);
+  const deleted = useRef(false);
+
+  useEffect(
+    () => () => {
+      if (deleted.current) logout();
+    },
+    [logout],
+  );
 
   async function onConfirm() {
     setPending(true);
     const res = await submit(() => deleteAccount(password));
     if (res.ok) {
-      logout();
+      // Sign out only once this page is gone: signing out first lets the route guard
+      // win the race and send the visitor to /login instead of the home page.
+      deleted.current = true;
       navigate('/', { replace: true });
       return;
     }
