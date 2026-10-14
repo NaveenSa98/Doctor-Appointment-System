@@ -12,6 +12,7 @@ from app.repositories import (
     appointment_repository,
     doctor_repository,
     hospital_repository,
+    session_repository,
     user_repository,
 )
 from app.schemas.admin import (
@@ -93,10 +94,14 @@ def get_doctor(session: Session, doctor_id: uuid.UUID) -> AdminDoctorOut:
 def create_doctor(session: Session, data: DoctorCreate) -> AdminDoctorOut:
     """Create a doctor, link their hospitals and, if given, create their login."""
     doctor = Doctor(full_name=data.full_name, specialty=data.specialty)
-    doctor.hospitals = _load_hospitals(session, data.hospital_ids)
+    hospitals = _load_hospitals(session, data.hospital_ids)
     try:
         with session.begin_nested():
+            # Add the doctor before linking hospitals, so the link is cascaded from a
+            # doctor that is already in the session.
             doctor_repository.add(session, doctor)
+            doctor.hospitals = hospitals
+            session.flush()
             if data.account is not None:
                 _new_login(session, doctor, data.account)
     except IntegrityError as exc:  # two admins creating the same email at once
@@ -109,6 +114,12 @@ def _check_hospitals_removable(session: Session, doctor: Doctor, wanted: list[Ho
     removed = {hospital.id for hospital in doctor.hospitals} - {hospital.id for hospital in wanted}
     if not removed:
         return
+    if session_repository.hospitals_with_sessions(session, doctor.id, list(removed)):
+        raise AppError(
+            409,
+            "hospital_has_sessions",
+            "This doctor has weekly sessions at a hospital you are removing. Remove them first.",
+        )
     if appointment_repository.hospitals_in_use(session, doctor.id, list(removed)):
         raise AppError(
             409,

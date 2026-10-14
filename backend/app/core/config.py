@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     access_token_minutes: int = Field(default=30, ge=1)
     login_rate_limit_per_minute: int = Field(default=10, ge=1)
     booking_rate_limit_per_minute: int = Field(default=10, ge=1)
+    # Session times are wall-clock times at the clinic. A fixed offset from UTC in minutes
+    # (Sri Lanka is 330). It does not follow daylight saving; change it if the clinic does.
+    clinic_utc_offset_minutes: int = Field(default=0, ge=-720, le=840)
 
     @field_validator("cors_origins")
     @classmethod
