@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useAvailability } from '../hooks/useAvailability';
 import { useSlots } from '../hooks/useSchedule';
@@ -73,7 +74,15 @@ function FieldError({ id, message }) {
  * Create/edit form shared by the public booking page and the staff pages.
  * `onSubmit(values)` should reject with the API error so it is shown on the right field.
  */
-export default function AppointmentForm({ initial, user, showStatus, submitLabel, onSubmit, onCancel }) {
+export default function AppointmentForm({
+  initial,
+  user,
+  showStatus,
+  submitLabel,
+  onSubmit,
+  onCancel,
+  prefill,
+}) {
   const doctorsQuery = useDoctors();
   const hospitalsQuery = useHospitals();
   const lockedDoctorId = user?.role === 'doctor' ? user.doctor_id : null;
@@ -132,6 +141,26 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
       await onSubmit(values);
     } catch (err) {
       applyServerError(err, setError);
+    }
+  });
+
+  // A doctor chosen in the search bar fills the form. The hospital is applied once the
+  // hospital options for that doctor have rendered, or the <select> would ignore it.
+  const pendingHospital = useRef(null);
+  useEffect(() => {
+    if (!prefill) return;
+    if (!lockedDoctorId) setValue('doctor_id', prefill.doctor_id);
+    if (prefill.date) setValue('date', prefill.date);
+    setValue('start_time', '');
+    setValue('hospital_id', '');
+    pendingHospital.current = prefill.hospital_id || null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefill]);
+  useEffect(() => {
+    const id = pendingHospital.current;
+    if (id && hospitalOptions.some((h) => h.id === id)) {
+      setValue('hospital_id', id);
+      pendingHospital.current = null;
     }
   });
 
