@@ -12,6 +12,7 @@ import DayViewPage from './pages/DayViewPage';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import MyBookingsPage from './pages/MyBookingsPage';
+import MySchedulePage from './pages/MySchedulePage';
 import NotFoundPage from './pages/NotFoundPage';
 import SignUpPage from './pages/SignUpPage';
 import { STAFF_ROLES } from './utils/roles';
@@ -41,6 +42,9 @@ export default function AppRoutes() {
           <Route path="appointments/day" element={<DayViewPage />} />
           <Route path="appointments/new" element={<AppointmentFormPage />} />
           <Route path="appointments/:id" element={<AppointmentFormPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={['doctor']} />}>
+          <Route path="my-schedule" element={<MySchedulePage />} />
         </Route>
         <Route element={<ProtectedRoute roles={['admin']} />}>
           <Route path="admin/doctors" element={<AdminDoctorsPage />} />

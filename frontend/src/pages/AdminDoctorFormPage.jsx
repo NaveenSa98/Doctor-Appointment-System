@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ErrorState from '../components/ErrorState';
 import PasswordField from '../components/PasswordField';
+import SessionsManager from '../components/SessionsManager';
 import Spinner from '../components/Spinner';
 import {
   useAdminDoctor,
@@ -343,6 +344,7 @@ export default function AdminDoctorFormPage() {
           onSubmit={(body) => update.mutateAsync(body)}
         />
         <LoginSection key={`login-${doctor.data.account?.email ?? 'none'}`} doctor={doctor.data} />
+        <SessionsManager doctor={doctor.data} />
         <StatusSection doctor={doctor.data} />
         <DeleteSection doctor={doctor.data} />
       </div>

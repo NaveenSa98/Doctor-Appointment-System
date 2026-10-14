@@ -71,6 +71,17 @@ export const handlers = [
   }),
   http.get(`${API}/appointments`, () => HttpResponse.json(emptyPage())),
   http.get(`${API}/admin/doctors`, () => HttpResponse.json([])),
+  http.get(`${API}/doctors/:id/slots`, ({ params, request }) =>
+    HttpResponse.json({
+      doctor_id: params.id,
+      hospital_id: new URL(request.url).searchParams.get('hospital_id'),
+      restricted: false,
+      slots: [],
+    }),
+  ),
+  http.get(`${API}/doctors/:id/sessions`, ({ params }) =>
+    HttpResponse.json({ doctor_id: params.id, utc_offset_minutes: 0, sessions: [] }),
+  ),
   http.get(`${API}/appointments/stats`, () => HttpResponse.json(makeStats())),
   http.get(`${API}/doctors`, () => HttpResponse.json([doctor, doctor2])),
   http.get(`${API}/hospitals`, () => HttpResponse.json([hospital, hospital2])),
