@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import ColumnElement, func, select
+from sqlalchemy import ColumnElement, exists, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
@@ -32,6 +32,7 @@ class AppointmentFilters:
 
     q: str | None = None
     doctor_id: uuid.UUID | None = None
+    created_by: uuid.UUID | None = None
     hospital_id: uuid.UUID | None = None
     statuses: Sequence[AppointmentStatus] = ()
     types: Sequence[AppointmentType] = ()
@@ -51,6 +52,8 @@ def _conditions(filters: AppointmentFilters) -> list[ColumnElement[bool]]:
         conditions.append(Appointment.patient_name.ilike(pattern, escape="\\"))
     if filters.doctor_id is not None:
         conditions.append(Appointment.doctor_id == filters.doctor_id)
+    if filters.created_by is not None:
+        conditions.append(Appointment.created_by == filters.created_by)
     if filters.hospital_id is not None:
         conditions.append(Appointment.hospital_id == filters.hospital_id)
     if filters.statuses:
@@ -92,7 +95,7 @@ def count_by_status(session: Session, filters: AppointmentFilters) -> dict[Appoi
         .where(*_conditions(filters))
         .group_by(Appointment.status)
     )
-    return {status: count for status, count in session.execute(statement).tuples()}
+    return {status: count for status, count in session.execute(statement)}
 
 
 def _is_slot_conflict(exc: IntegrityError) -> bool:
@@ -102,9 +105,12 @@ def _is_slot_conflict(exc: IntegrityError) -> bool:
 
 
 def get(
-    session: Session, appointment_id: uuid.UUID, doctor_id: uuid.UUID | None = None
+    session: Session,
+    appointment_id: uuid.UUID,
+    doctor_id: uuid.UUID | None = None,
+    created_by: uuid.UUID | None = None,
 ) -> Appointment | None:
-    """Find a live (not soft-deleted) appointment, optionally limited to one doctor."""
+    """Find a live (not soft-deleted) appointment, optionally limited to a doctor or a booker."""
     statement = (
         select(Appointment)
         .options(joinedload(Appointment.doctor), joinedload(Appointment.hospital))
@@ -112,6 +118,8 @@ def get(
     )
     if doctor_id is not None:
         statement = statement.where(Appointment.doctor_id == doctor_id)
+    if created_by is not None:
+        statement = statement.where(Appointment.created_by == created_by)
     return session.scalars(statement).first()
 
 
@@ -157,5 +165,44 @@ def taken_slots(
             Appointment.status != AppointmentStatus.CANCELLED,
         )
         .order_by(Appointment.start_time)
+    )
+    return list(session.scalars(statement))
+
+
+def count_live_by_doctor(session: Session) -> dict[uuid.UUID, int]:
+    """Live (not soft-deleted) appointments per doctor."""
+    statement = (
+        select(Appointment.doctor_id, func.count())
+        .where(Appointment.deleted_at.is_(None))
+        .group_by(Appointment.doctor_id)
+    )
+    return {doctor_id: count for doctor_id, count in session.execute(statement)}
+
+
+def has_any_for_doctor(session: Session, doctor_id: uuid.UUID) -> bool:
+    """True if any appointment row (even a soft-deleted one) points at the doctor."""
+    return bool(session.scalar(select(exists().where(Appointment.doctor_id == doctor_id))))
+
+
+def hospitals_in_use(
+    session: Session, doctor_id: uuid.UUID, hospital_ids: Sequence[uuid.UUID]
+) -> set[uuid.UUID]:
+    """Which of these hospitals have any appointment row for the doctor (even a deleted one)."""
+    statement = select(Appointment.hospital_id).where(
+        Appointment.doctor_id == doctor_id, Appointment.hospital_id.in_(hospital_ids)
+    )
+    return set(session.scalars(statement))
+
+
+def upcoming_starts(
+    session: Session, doctor_id: uuid.UUID, hospital_id: uuid.UUID, after: datetime
+) -> list[datetime]:
+    """Start times of the doctor's live, not-cancelled appointments at a hospital after `after`."""
+    statement = select(Appointment.start_time).where(
+        Appointment.doctor_id == doctor_id,
+        Appointment.hospital_id == hospital_id,
+        Appointment.start_time >= after,
+        Appointment.deleted_at.is_(None),
+        Appointment.status != AppointmentStatus.CANCELLED,
     )
     return list(session.scalars(statement))

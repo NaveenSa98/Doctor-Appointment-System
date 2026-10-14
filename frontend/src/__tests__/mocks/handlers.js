@@ -3,7 +3,14 @@ import { http, HttpResponse } from 'msw';
 export const API = 'http://localhost:8000/api/v1';
 
 export const adminUser = { id: 'u1', email: 'admin@example.com', role: 'admin', doctor_id: null };
-export const doctorUser = { id: 'u2', email: 'doc@example.com', role: 'doctor', doctor_id: 'd1' };
+export const patientUser = {
+  id: 'u3',
+  email: 'pat@example.com',
+  full_name: 'Pat Patient',
+  role: 'patient',
+  doctor_id: null,
+};
+export const doctorUser ={ id: 'u2', email: 'doc@example.com', role: 'doctor', doctor_id: 'd1' };
 
 export const hospital = { id: 'h1', name: 'Riverside General' };
 export const hospital2 = { id: 'h2', name: "St. Mary's Clinic" };
@@ -59,9 +66,23 @@ export const handlers = [
     const auth = request.headers.get('Authorization');
     if (auth === 'Bearer test-token') return HttpResponse.json(adminUser);
     if (auth === 'Bearer doctor-token') return HttpResponse.json(doctorUser);
+    if (auth === 'Bearer patient-token') return HttpResponse.json(patientUser);
     return unauthorized();
   }),
   http.get(`${API}/appointments`, () => HttpResponse.json(emptyPage())),
+  http.get(`${API}/admin/doctors`, () => HttpResponse.json([])),
+  http.get(`${API}/patients`, () => HttpResponse.json(emptyPage())),
+  http.get(`${API}/doctors/:id/slots`, ({ params, request }) =>
+    HttpResponse.json({
+      doctor_id: params.id,
+      hospital_id: new URL(request.url).searchParams.get('hospital_id'),
+      restricted: false,
+      slots: [],
+    }),
+  ),
+  http.get(`${API}/doctors/:id/sessions`, ({ params }) =>
+    HttpResponse.json({ doctor_id: params.id, utc_offset_minutes: 0, sessions: [] }),
+  ),
   http.get(`${API}/appointments/stats`, () => HttpResponse.json(makeStats())),
   http.get(`${API}/doctors`, () => HttpResponse.json([doctor, doctor2])),
   http.get(`${API}/hospitals`, () => HttpResponse.json([hospital, hospital2])),

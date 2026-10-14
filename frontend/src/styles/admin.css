@@ -1,0 +1,28 @@
+/* Admin: doctor management (M11) */
+.hospital-picks {
+  margin: 0;
+}
+
+.login-box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 16px;
+  background: var(--bg);
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand);
+}

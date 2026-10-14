@@ -46,6 +46,7 @@ def test_login_returns_a_token_and_the_user(db_client: TestClient, admin: User) 
     assert body["user"] == {
         "id": str(admin.id),
         "email": "Admin@Demo.test",
+        "full_name": None,
         "role": "admin",
         "doctor_id": None,
     }

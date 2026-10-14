@@ -1,0 +1,388 @@
+/* UI polish: loaded last, so it refines the page-specific styles before it. */
+
+:root {
+  --shadow-sm: 0 1px 2px rgba(14, 31, 30, 0.06), 0 1px 3px rgba(14, 31, 30, 0.04);
+  --shadow-md: 0 8px 24px -12px rgba(14, 31, 30, 0.22);
+  --ring: 0 0 0 4px rgba(11, 122, 117, 0.16);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header: stays in view, nav scrolls sideways on small screens instead of wrapping badly. */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(1.4) blur(8px);
+  box-shadow: var(--shadow-sm);
+}
+
+.nav a {
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.nav a:hover:not(.active) {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+@media (max-width: 760px) {
+  .header-inner {
+    gap: 8px 16px;
+    padding: 10px 16px;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .nav a {
+    white-space: nowrap;
+  }
+
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .page-title {
+    font-size: 26px;
+  }
+}
+
+/* Buttons and fields */
+.btn {
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+
+.btn:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg);
+  border-color: var(--brand);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #8f1a10;
+}
+
+.field input:focus,
+.field select:focus,
+.filters select:focus,
+.search-field input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: var(--ring);
+}
+
+.field input,
+.field select,
+.filters select,
+.search-field input {
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* Cards and tables */
+.card {
+  box-shadow: var(--shadow-md);
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: #fafcfb;
+}
+
+.table tbody tr {
+  transition: background-color 0.12s;
+}
+
+.table tbody tr:hover {
+  background: #f6faf9;
+}
+
+.booking {
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.booking:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.chip {
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.chip:hover {
+  border-color: var(--brand);
+}
+
+.slot {
+  transition: background-color 0.12s, border-color 0.12s;
+}
+
+.slot:hover:not(:disabled):not(.slot-on) {
+  border-color: var(--brand);
+  background: var(--bg);
+}
+
+.state-card {
+  box-shadow: var(--shadow-sm);
+}
+
+/* Booking and edit forms: numbered steps */
+.form-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.form-step span {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-card .form-step:not(:first-child) {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+/* Home page */
+.hero {
+  padding-bottom: 40px;
+}
+
+.hero-logo {
+  width: 96px;
+  height: 96px;
+  border-radius: 22px;
+}
+
+.lead {
+  max-width: 560px;
+}
+
+.icon-tile {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.benefits {
+  flex: 1 1 340px;
+  min-width: 0;
+}
+
+.benefits ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.benefits li {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.benefits li > span:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.benefits .sub {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.how {
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.how-inner {
+  padding-top: 56px;
+  padding-bottom: 56px;
+  text-align: center;
+}
+
+.how h2 {
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 800;
+}
+
+.how-lede {
+  margin: 8px auto 32px;
+  max-width: 520px;
+}
+
+.how-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  text-align: left;
+}
+
+.how-step {
+  position: relative;
+  padding: 24px 22px 22px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.how-step h3 {
+  margin: 6px 0 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.how-step p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.how-num {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--line-strong);
+}
+
+.how-cta {
+  margin-top: 36px;
+}
+
+/* Footer */
+.footer {
+  background: #0b4f4c;
+  color: #cfe7e4;
+  margin-top: auto;
+}
+
+.footer-inner {
+  max-width: 1184px;
+  margin: 0 auto;
+  padding: 28px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+  align-items: flex-start;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.footer strong {
+  color: #fff;
+  font-size: 16px;
+}
+
+.footer p {
+  margin: 4px 0 0;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+.footer-note {
+  width: 100%;
+  font-size: 13px;
+  color: #9cc7c2;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  padding-top: 14px;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}
+
+/* Booking confirmation */
+.receipt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.receipt-actions .btn {
+  gap: 8px;
+}
+
+.receipt-note {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}

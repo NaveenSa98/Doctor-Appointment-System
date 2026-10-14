@@ -2,7 +2,7 @@
 
 import uuid
 
-from sqlalchemy import exists, select
+from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.models import Doctor, doctor_hospitals
@@ -36,3 +36,32 @@ def visits_hospital(session: Session, doctor_id: uuid.UUID, hospital_id: uuid.UU
         doctor_hospitals.c.hospital_id == hospital_id,
     )
     return bool(session.scalar(select(link)))
+
+
+def get(session: Session, doctor_id: uuid.UUID) -> Doctor | None:
+    """Find a doctor of any status, with their hospitals."""
+    return session.scalar(
+        select(Doctor).options(selectinload(Doctor.hospitals)).where(Doctor.id == doctor_id)
+    )
+
+
+def list_all(session: Session) -> list[Doctor]:
+    """Every doctor, active or not, with their hospitals."""
+    statement = (
+        select(Doctor)
+        .options(selectinload(Doctor.hospitals))
+        .order_by(func.lower(Doctor.full_name))
+    )
+    return list(session.scalars(statement))
+
+
+def add(session: Session, doctor: Doctor) -> None:
+    """Insert a doctor."""
+    session.add(doctor)
+    session.flush()
+
+
+def delete(session: Session, doctor: Doctor) -> None:
+    """Remove a doctor and their hospital links."""
+    session.delete(doctor)
+    session.flush()

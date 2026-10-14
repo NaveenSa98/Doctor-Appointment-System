@@ -19,6 +19,7 @@ from app.schemas.appointment import (
     AppointmentUpdate,
 )
 from app.schemas.common import Page
+from app.services import schedule_service
 
 MAX_BOOKING_HORIZON = timedelta(days=730)
 
@@ -59,23 +60,44 @@ def _resolve_doctor_id(user: User | None, requested: uuid.UUID | None) -> uuid.U
     return requested
 
 
+def _own_booker_id(user: User | None) -> uuid.UUID | None:
+    """The booker a patient is limited to (their own bookings), or None for everyone else."""
+    return user.id if user is not None and user.role == UserRole.PATIENT else None
+
+
+def _require_not_patient(user: User, message: str) -> None:
+    if user.role == UserRole.PATIENT:
+        raise ForbiddenError(message)
+
+
 def _get_visible(session: Session, user: User, appointment_id: uuid.UUID) -> Appointment:
-    """A live appointment the user may see; doctors only see their own (404 otherwise)."""
-    appointment = appointment_repository.get(session, appointment_id, _own_doctor_id(user))
+    """A live appointment the user may see (404 otherwise): doctors see their own patients'
+    bookings, patients see the bookings they made."""
+    appointment = appointment_repository.get(
+        session, appointment_id, _own_doctor_id(user), _own_booker_id(user)
+    )
     if appointment is None:
         raise NotFoundError("Appointment not found")
     return appointment
 
 
 def create_appointment(
-    session: Session, user: User | None, data: AppointmentCreate, now: datetime
+    session: Session,
+    user: User | None,
+    data: AppointmentCreate,
+    now: datetime,
+    clinic_offset_minutes: int = 0,
 ) -> Appointment:
     """Book an appointment. Anonymous visitors may book but cannot choose a status."""
-    if user is None and data.status not in (None, AppointmentStatus.SCHEDULED):
+    is_staff = user is not None and user.role != UserRole.PATIENT
+    if not is_staff and data.status not in (None, AppointmentStatus.SCHEDULED):
         raise ValidationFailed("status", "Only signed-in staff can set a status")
     doctor = _require_active_doctor(session, _resolve_doctor_id(user, data.doctor_id))
     _require_visits(session, doctor.id, data.hospital_id)
     check_bookable_time(data.start_time, now)
+    schedule_service.require_slot_allowed(
+        session, doctor.id, data.hospital_id, data.start_time, clinic_offset_minutes
+    )
 
     appointment = Appointment(
         patient_name=data.patient_name,
@@ -107,6 +129,7 @@ def list_appointments(
     filters = AppointmentFilters(
         q=query.q,
         doctor_id=_own_doctor_id(user) or query.doctor_id,
+        created_by=_own_booker_id(user),
         hospital_id=query.hospital_id,
         statuses=query.status,
         types=query.type,
@@ -130,6 +153,7 @@ def appointment_stats(
     session: Session, user: User, query: AppointmentStatsQuery
 ) -> AppointmentStatsOut:
     """Counts per status for the same scope the list uses: doctors only count their own."""
+    _require_not_patient(user, "Counts are only available to staff")
     if query.date_from and query.date_to and query.date_from > query.date_to:
         raise ValidationFailed("date_to", "must not be before date_from")
     filters = AppointmentFilters(
@@ -153,8 +177,10 @@ def update_appointment(
     appointment_id: uuid.UUID,
     data: AppointmentUpdate,
     now: datetime,
+    clinic_offset_minutes: int = 0,
 ) -> Appointment:
     """Change an appointment. The time rule only applies when the time or doctor changes."""
+    _require_not_patient(user, "To change a booking, please contact the clinic")
     appointment = _get_visible(session, user, appointment_id)
     changes = data.model_dump(exclude_unset=True)
     doctor_id = changes.get("doctor_id", appointment.doctor_id)
@@ -171,6 +197,14 @@ def update_appointment(
         _require_visits(session, doctor_id, hospital_id)
     if doctor_changed or start_time != appointment.start_time:
         check_bookable_time(start_time, now)
+    if (
+        doctor_changed
+        or hospital_id != appointment.hospital_id
+        or start_time != appointment.start_time
+    ):
+        schedule_service.require_slot_allowed(
+            session, doctor_id, hospital_id, start_time, clinic_offset_minutes
+        )
 
     appointment_repository.update(session, appointment, changes)
     session.commit()
@@ -181,6 +215,7 @@ def delete_appointment(
     session: Session, user: User, appointment_id: uuid.UUID, now: datetime
 ) -> None:
     """Soft-delete an appointment the user may see."""
+    _require_not_patient(user, "To cancel a booking, please contact the clinic")
     appointment = _get_visible(session, user, appointment_id)
     appointment_repository.soft_delete(appointment, now)
     session.commit()

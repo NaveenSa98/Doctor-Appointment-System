@@ -1,5 +1,7 @@
+import { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useAvailability } from '../hooks/useAvailability';
+import { useSlots } from '../hooks/useSchedule';
 import { useDoctors, useHospitals } from '../hooks/useDoctors';
 import { STATUSES } from '../hooks/useUrlFilters';
 import { errorMessage, fieldErrors } from '../utils/errors';
@@ -20,7 +22,7 @@ export const TYPES = {
 
 const FORM_FIELDS = ['patient_name', 'doctor_id', 'hospital_id', 'start_time', 'appointment_type', 'status'];
 
-function toFormValues(initial, lockedDoctorId) {
+function toFormValues(initial, lockedDoctorId, user) {
   if (initial) {
     return {
       hospital_id: initial.hospital.id,
@@ -38,7 +40,7 @@ function toFormValues(initial, lockedDoctorId) {
     date: '',
     start_time: '',
     appointment_type: 'consultation',
-    patient_name: '',
+    patient_name: user?.role === 'patient' ? (user.full_name ?? '') : '',
     status: 'scheduled',
   };
 }
@@ -72,7 +74,15 @@ function FieldError({ id, message }) {
  * Create/edit form shared by the public booking page and the staff pages.
  * `onSubmit(values)` should reject with the API error so it is shown on the right field.
  */
-export default function AppointmentForm({ initial, user, showStatus, submitLabel, onSubmit, onCancel }) {
+export default function AppointmentForm({
+  initial,
+  user,
+  showStatus,
+  submitLabel,
+  onSubmit,
+  onCancel,
+  prefill,
+}) {
   const doctorsQuery = useDoctors();
   const hospitalsQuery = useHospitals();
   const lockedDoctorId = user?.role === 'doctor' ? user.doctor_id : null;
@@ -85,7 +95,7 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
     control,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm({ defaultValues: toFormValues(initial, lockedDoctorId) });
+  } = useForm({ defaultValues: toFormValues(initial, lockedDoctorId, user) });
   const [doctorId, hospitalId, date, startTime] = watch(['doctor_id', 'hospital_id', 'date', 'start_time']);
 
   const allDoctors = withCurrent(doctorsQuery.data, initial?.doctor, {
@@ -103,10 +113,20 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
 
   const availability = useAvailability(doctorId, date);
   const taken = new Set((availability.data?.taken ?? []).map((iso) => Date.parse(iso)));
-  const slots = date ? slotsForDate(date) : [];
+  // With a hospital chosen, the doctor's sessions decide the times; a doctor with no sessions
+  // (restricted: false) keeps the default hours.
+  const sessionSlots = useSlots(doctorId, hospitalId, date);
+  const restricted = Boolean(sessionSlots.data?.restricted);
+  const slots = !date ? [] : restricted ? [...sessionSlots.data.slots] : slotsForDate(date);
   const hasStart = startTime && slots.some((s) => Date.parse(s) === Date.parse(startTime));
   if (date && startTime && !hasStart && utcIsoToLocalInput(startTime).startsWith(date)) slots.push(startTime);
-  const hint = !doctorId || !date ? 'Choose a doctor and a date to see times.' : null;
+  const waitingForSlots = Boolean(doctorId && hospitalId && date) && sessionSlots.isPending;
+  let hint = null;
+  if (!doctorId || !date) hint = 'Choose a doctor and a date to see times.';
+  else if (waitingForSlots) hint = 'Loading times…';
+  else if (restricted && slots.length === 0 && !startTime) {
+    hint = 'This doctor has no session on that day. Try another date.';
+  }
 
   function onDoctorChange(event) {
     const next = allDoctors.find((d) => d.id === event.target.value);
@@ -121,6 +141,26 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
       await onSubmit(values);
     } catch (err) {
       applyServerError(err, setError);
+    }
+  });
+
+  // A doctor chosen in the search bar fills the form. The hospital is applied once the
+  // hospital options for that doctor have rendered, or the <select> would ignore it.
+  const pendingHospital = useRef(null);
+  useEffect(() => {
+    if (!prefill) return;
+    if (!lockedDoctorId) setValue('doctor_id', prefill.doctor_id);
+    if (prefill.date) setValue('date', prefill.date);
+    setValue('start_time', '');
+    setValue('hospital_id', '');
+    pendingHospital.current = prefill.hospital_id || null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefill]);
+  useEffect(() => {
+    const id = pendingHospital.current;
+    if (id && hospitalOptions.some((h) => h.id === id)) {
+      setValue('hospital_id', id);
+      pendingHospital.current = null;
     }
   });
 
@@ -143,6 +183,9 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
         </div>
       )}
 
+      <h2 className="form-step">
+        <span aria-hidden="true">1</span> Choose your doctor and date
+      </h2>
       <div className="form-grid">
         <div className="field">
           <label htmlFor="hospital_id">Hospital</label>
@@ -203,6 +246,9 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
         </div>
       </div>
 
+      <h2 className="form-step">
+        <span aria-hidden="true">2</span> Pick a time
+      </h2>
       <Controller
         name="start_time"
         control={control}
@@ -221,6 +267,9 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
         )}
       />
 
+      <h2 className="form-step">
+        <span aria-hidden="true">3</span> Patient details
+      </h2>
       <div className="form-grid">
         <div className="field">
           <label htmlFor="patient_name">Patient name</label>

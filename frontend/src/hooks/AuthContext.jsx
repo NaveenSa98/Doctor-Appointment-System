@@ -33,18 +33,32 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (email, password) => {
-    const { access_token: token, user: me } = await authApi.login(email, password);
+  const startSession = useCallback(({ access_token: token, user: me }) => {
     setToken(token);
     setUser(me);
     return me;
   }, []);
 
-  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout]);
+  const login = useCallback(
+    async (email, password) => startSession(await authApi.login(email, password)),
+    [startSession],
+  );
+
+  /** Create a patient account and sign it in. */
+  const register = useCallback(
+    async (fullName, email, password) =>
+      startSession(await authApi.register(fullName, email, password)),
+    [startSession],
+  );
+
+  const value = useMemo(
+    () => ({ user, loading, login, register, logout, setUser }),
+    [user, loading, login, register, logout],
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-/** @returns {{ user: import('../api/client').User|null, loading: boolean, login: Function, logout: Function }} */
+/** @returns {{ user: import('../api/client').User|null, loading: boolean, login: Function, register: Function, logout: Function, setUser: Function }} */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');

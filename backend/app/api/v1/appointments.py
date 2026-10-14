@@ -9,6 +9,7 @@ from app.api.v1.deps import (
     CurrentUser,
     NowDep,
     SessionDep,
+    SettingsDep,
     booking_rate_limit,
     get_optional_user,
 )
@@ -37,11 +38,14 @@ def create_appointment(
     body: AppointmentCreate,
     response: Response,
     session: SessionDep,
+    settings: SettingsDep,
     now: NowDep,
     user: Annotated[User | None, Depends(get_optional_user)],
 ) -> Appointment:
     """Book an appointment. No sign-in needed; a signed-in user gets a pre-filled doctor."""
-    appointment = appointment_service.create_appointment(session, user, body, now)
+    appointment = appointment_service.create_appointment(
+        session, user, body, now, settings.clinic_utc_offset_minutes
+    )
     response.headers["Location"] = f"/api/v1/appointments/{appointment.id}"
     return appointment
 
@@ -75,11 +79,14 @@ def update_appointment(
     appointment_id: uuid.UUID,
     body: AppointmentUpdate,
     session: SessionDep,
+    settings: SettingsDep,
     now: NowDep,
     user: CurrentUser,
 ) -> Appointment:
     """Change any subset of an appointment's fields."""
-    return appointment_service.update_appointment(session, user, appointment_id, body, now)
+    return appointment_service.update_appointment(
+        session, user, appointment_id, body, now, settings.clinic_utc_offset_minutes
+    )
 
 
 @router.delete("/{appointment_id}", status_code=204, response_class=Response)

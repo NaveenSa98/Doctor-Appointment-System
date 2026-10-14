@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/AuthContext';
+import Footer from './Footer';
 import logoUrl from '../../logo/Logo.jpeg';
 
 function Logo() {
@@ -26,19 +27,27 @@ export default function Layout() {
           <nav className="nav" aria-label="Main">
             <NavLink to="/" end>Home</NavLink>
             <NavLink to="/book">Doctor Channelling</NavLink>
-            {user && <NavLink to="/appointments">Appointments</NavLink>}
+            {user?.role === 'patient' && <NavLink to="/my-bookings">My bookings</NavLink>}
+            {user && user.role !== 'patient' && <NavLink to="/appointments">Appointments</NavLink>}
+            {user && user.role !== 'patient' && <NavLink to="/patients">Patients</NavLink>}
+            {user?.role === 'admin' && <NavLink to="/admin/doctors">Doctors</NavLink>}
+            {user?.role === 'doctor' && <NavLink to="/my-schedule">My schedule</NavLink>}
           </nav>
           <div className="header-actions">
             {user ? (
               <>
-                <span className="user-chip" title={user.email}>
-                  <span className="avatar" aria-hidden="true">{user.email.slice(0, 2).toUpperCase()}</span>
-                  <span className="role">{user.role}</span>
-                </span>
+                <Link to="/account" className="user-chip" title={user.email}>
+                  <span className="avatar" aria-hidden="true">{(user.full_name ?? user.email).slice(0, 2).toUpperCase()}</span>
+                  <span className="role">{user.full_name ?? user.role}</span>
+                  <span className="sr-only"> (account settings)</span>
+                </Link>
                 <button type="button" className="btn btn-secondary" onClick={logout}>Sign out</button>
               </>
             ) : (
-              <Link to="/login" className="btn btn-secondary">Sign in</Link>
+              <>
+                <Link to="/login" className="btn btn-secondary">Sign in</Link>
+                <Link to="/signup" className="btn btn-primary">Sign up</Link>
+              </>
             )}
           </div>
         </div>
@@ -46,6 +55,7 @@ export default function Layout() {
       <main className="main">
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
 }
