@@ -154,6 +154,9 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
         </div>
       )}
 
+      <h2 className="form-step">
+        <span aria-hidden="true">1</span> Choose your doctor and date
+      </h2>
       <div className="form-grid">
         <div className="field">
           <label htmlFor="hospital_id">Hospital</label>
@@ -214,6 +217,9 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
         </div>
       </div>
 
+      <h2 className="form-step">
+        <span aria-hidden="true">2</span> Pick a time
+      </h2>
       <Controller
         name="start_time"
         control={control}
@@ -232,6 +238,9 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
         )}
       />
 
+      <h2 className="form-step">
+        <span aria-hidden="true">3</span> Patient details
+      </h2>
       <div className="form-grid">
         <div className="field">
           <label htmlFor="patient_name">Patient name</label>

@@ -8,6 +8,7 @@ import './styles/signin.css';
 import './styles/account.css';
 import './styles/admin.css';
 import './styles/schedule.css';
+import './styles/polish.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
