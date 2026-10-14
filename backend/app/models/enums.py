@@ -4,10 +4,11 @@ from enum import Enum, StrEnum
 
 
 class UserRole(StrEnum):
-    """Staff roles."""
+    """Account roles: staff (admin, doctor) and patients who signed up themselves."""
 
     ADMIN = "admin"
     DOCTOR = "doctor"
+    PATIENT = "patient"
 
 
 class AppointmentType(StrEnum):

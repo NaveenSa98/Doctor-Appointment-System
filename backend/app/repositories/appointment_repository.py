@@ -32,6 +32,7 @@ class AppointmentFilters:
 
     q: str | None = None
     doctor_id: uuid.UUID | None = None
+    created_by: uuid.UUID | None = None
     hospital_id: uuid.UUID | None = None
     statuses: Sequence[AppointmentStatus] = ()
     types: Sequence[AppointmentType] = ()
@@ -51,6 +52,8 @@ def _conditions(filters: AppointmentFilters) -> list[ColumnElement[bool]]:
         conditions.append(Appointment.patient_name.ilike(pattern, escape="\\"))
     if filters.doctor_id is not None:
         conditions.append(Appointment.doctor_id == filters.doctor_id)
+    if filters.created_by is not None:
+        conditions.append(Appointment.created_by == filters.created_by)
     if filters.hospital_id is not None:
         conditions.append(Appointment.hospital_id == filters.hospital_id)
     if filters.statuses:
@@ -102,9 +105,12 @@ def _is_slot_conflict(exc: IntegrityError) -> bool:
 
 
 def get(
-    session: Session, appointment_id: uuid.UUID, doctor_id: uuid.UUID | None = None
+    session: Session,
+    appointment_id: uuid.UUID,
+    doctor_id: uuid.UUID | None = None,
+    created_by: uuid.UUID | None = None,
 ) -> Appointment | None:
-    """Find a live (not soft-deleted) appointment, optionally limited to one doctor."""
+    """Find a live (not soft-deleted) appointment, optionally limited to a doctor or a booker."""
     statement = (
         select(Appointment)
         .options(joinedload(Appointment.doctor), joinedload(Appointment.hospital))
@@ -112,6 +118,8 @@ def get(
     )
     if doctor_id is not None:
         statement = statement.where(Appointment.doctor_id == doctor_id)
+    if created_by is not None:
+        statement = statement.where(Appointment.created_by == created_by)
     return session.scalars(statement).first()
 
 

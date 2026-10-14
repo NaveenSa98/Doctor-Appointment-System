@@ -89,7 +89,9 @@ class Appointment(Base):
         default=AppointmentStatus.SCHEDULED,
         server_default=text("'scheduled'"),
     )
-    created_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
     deleted_at: Mapped[datetime | None]

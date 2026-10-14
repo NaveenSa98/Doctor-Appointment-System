@@ -74,11 +74,16 @@ def login_rate_limit(request: Request, settings: SettingsDep) -> None:
     enforce_rate_limit(request, "login", settings.login_rate_limit_per_minute)
 
 
+def register_rate_limit(request: Request, settings: SettingsDep) -> None:
+    """Limit sign-ups per client."""
+    enforce_rate_limit(request, "register", settings.login_rate_limit_per_minute)
+
+
 def booking_rate_limit(
     request: Request,
     settings: SettingsDep,
     user: Annotated[User | None, Depends(get_optional_user)],
 ) -> None:
-    """Limit anonymous bookings per client. Signed-in staff are not limited."""
-    if user is None:
+    """Limit bookings by visitors and patients per client. Signed-in staff are not limited."""
+    if user is None or user.role == UserRole.PATIENT:
         enforce_rate_limit(request, "booking", settings.booking_rate_limit_per_minute)
