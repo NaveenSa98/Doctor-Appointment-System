@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/AuthContext';
+import Footer from './Footer';
 import logoUrl from '../../logo/Logo.jpeg';
 
 function Logo() {
@@ -54,6 +55,7 @@ export default function Layout() {
       <main className="main">
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
 }
