@@ -19,6 +19,7 @@ from app.schemas.appointment import (
     AppointmentUpdate,
 )
 from app.schemas.common import Page
+from app.services import schedule_service
 
 MAX_BOOKING_HORIZON = timedelta(days=730)
 
@@ -81,7 +82,11 @@ def _get_visible(session: Session, user: User, appointment_id: uuid.UUID) -> App
 
 
 def create_appointment(
-    session: Session, user: User | None, data: AppointmentCreate, now: datetime
+    session: Session,
+    user: User | None,
+    data: AppointmentCreate,
+    now: datetime,
+    clinic_offset_minutes: int = 0,
 ) -> Appointment:
     """Book an appointment. Anonymous visitors may book but cannot choose a status."""
     is_staff = user is not None and user.role != UserRole.PATIENT
@@ -90,6 +95,9 @@ def create_appointment(
     doctor = _require_active_doctor(session, _resolve_doctor_id(user, data.doctor_id))
     _require_visits(session, doctor.id, data.hospital_id)
     check_bookable_time(data.start_time, now)
+    schedule_service.require_slot_allowed(
+        session, doctor.id, data.hospital_id, data.start_time, clinic_offset_minutes
+    )
 
     appointment = Appointment(
         patient_name=data.patient_name,
@@ -169,6 +177,7 @@ def update_appointment(
     appointment_id: uuid.UUID,
     data: AppointmentUpdate,
     now: datetime,
+    clinic_offset_minutes: int = 0,
 ) -> Appointment:
     """Change an appointment. The time rule only applies when the time or doctor changes."""
     _require_not_patient(user, "To change a booking, please contact the clinic")
@@ -188,6 +197,14 @@ def update_appointment(
         _require_visits(session, doctor_id, hospital_id)
     if doctor_changed or start_time != appointment.start_time:
         check_bookable_time(start_time, now)
+    if (
+        doctor_changed
+        or hospital_id != appointment.hospital_id
+        or start_time != appointment.start_time
+    ):
+        schedule_service.require_slot_allowed(
+            session, doctor_id, hospital_id, start_time, clinic_offset_minutes
+        )
 
     appointment_repository.update(session, appointment, changes)
     session.commit()

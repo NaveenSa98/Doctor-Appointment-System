@@ -6,8 +6,10 @@ EXPECTED_TABLES = {
     "alembic_version",
     "appointments",
     "doctor_hospitals",
+    "doctor_sessions",
     "doctors",
     "hospitals",
+    "session_exclusions",
     "users",
 }
 

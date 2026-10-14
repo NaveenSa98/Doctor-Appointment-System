@@ -29,6 +29,7 @@ export default function Layout() {
             {user?.role === 'patient' && <NavLink to="/my-bookings">My bookings</NavLink>}
             {user && user.role !== 'patient' && <NavLink to="/appointments">Appointments</NavLink>}
             {user?.role === 'admin' && <NavLink to="/admin/doctors">Doctors</NavLink>}
+            {user?.role === 'doctor' && <NavLink to="/my-schedule">My schedule</NavLink>}
           </nav>
           <div className="header-actions">
             {user ? (

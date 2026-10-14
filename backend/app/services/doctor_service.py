@@ -18,7 +18,7 @@ def list_doctors(session: Session, hospital_id: uuid.UUID | None) -> list[Doctor
     return doctor_repository.list_active(session, hospital_id)
 
 
-def _require_aware(field: str, value: datetime) -> None:
+def require_aware(field: str, value: datetime) -> None:
     if value.tzinfo is None or value.utcoffset() is None:
         raise ValidationFailed(field, "must include a timezone, for example 2030-01-15T00:00:00Z")
 
@@ -27,8 +27,8 @@ def availability(
     session: Session, doctor_id: uuid.UUID, date_from: datetime, date_to: datetime
 ) -> AvailabilityOut:
     """Start times already taken for a doctor in [date_from, date_to). No patient data."""
-    _require_aware("date_from", date_from)
-    _require_aware("date_to", date_to)
+    require_aware("date_from", date_from)
+    require_aware("date_to", date_to)
     if date_to <= date_from:
         raise ValidationFailed("date_to", "must be after date_from")
     if date_to - date_from > MAX_AVAILABILITY_WINDOW:

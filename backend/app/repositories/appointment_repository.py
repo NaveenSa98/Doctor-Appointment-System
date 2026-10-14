@@ -95,7 +95,7 @@ def count_by_status(session: Session, filters: AppointmentFilters) -> dict[Appoi
         .where(*_conditions(filters))
         .group_by(Appointment.status)
     )
-    return {status: count for status, count in session.execute(statement).tuples()}
+    return {status: count for status, count in session.execute(statement)}
 
 
 def _is_slot_conflict(exc: IntegrityError) -> bool:
@@ -176,7 +176,7 @@ def count_live_by_doctor(session: Session) -> dict[uuid.UUID, int]:
         .where(Appointment.deleted_at.is_(None))
         .group_by(Appointment.doctor_id)
     )
-    return {doctor_id: count for doctor_id, count in session.execute(statement).tuples()}
+    return {doctor_id: count for doctor_id, count in session.execute(statement)}
 
 
 def has_any_for_doctor(session: Session, doctor_id: uuid.UUID) -> bool:
@@ -192,3 +192,17 @@ def hospitals_in_use(
         Appointment.doctor_id == doctor_id, Appointment.hospital_id.in_(hospital_ids)
     )
     return set(session.scalars(statement))
+
+
+def upcoming_starts(
+    session: Session, doctor_id: uuid.UUID, hospital_id: uuid.UUID, after: datetime
+) -> list[datetime]:
+    """Start times of the doctor's live, not-cancelled appointments at a hospital after `after`."""
+    statement = select(Appointment.start_time).where(
+        Appointment.doctor_id == doctor_id,
+        Appointment.hospital_id == hospital_id,
+        Appointment.start_time >= after,
+        Appointment.deleted_at.is_(None),
+        Appointment.status != AppointmentStatus.CANCELLED,
+    )
+    return list(session.scalars(statement))

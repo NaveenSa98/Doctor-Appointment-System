@@ -1,5 +1,6 @@
 import { Controller, useForm } from 'react-hook-form';
 import { useAvailability } from '../hooks/useAvailability';
+import { useSlots } from '../hooks/useSchedule';
 import { useDoctors, useHospitals } from '../hooks/useDoctors';
 import { STATUSES } from '../hooks/useUrlFilters';
 import { errorMessage, fieldErrors } from '../utils/errors';
@@ -103,10 +104,20 @@ export default function AppointmentForm({ initial, user, showStatus, submitLabel
 
   const availability = useAvailability(doctorId, date);
   const taken = new Set((availability.data?.taken ?? []).map((iso) => Date.parse(iso)));
-  const slots = date ? slotsForDate(date) : [];
+  // With a hospital chosen, the doctor's sessions decide the times; a doctor with no sessions
+  // (restricted: false) keeps the default hours.
+  const sessionSlots = useSlots(doctorId, hospitalId, date);
+  const restricted = Boolean(sessionSlots.data?.restricted);
+  const slots = !date ? [] : restricted ? [...sessionSlots.data.slots] : slotsForDate(date);
   const hasStart = startTime && slots.some((s) => Date.parse(s) === Date.parse(startTime));
   if (date && startTime && !hasStart && utcIsoToLocalInput(startTime).startsWith(date)) slots.push(startTime);
-  const hint = !doctorId || !date ? 'Choose a doctor and a date to see times.' : null;
+  const waitingForSlots = Boolean(doctorId && hospitalId && date) && sessionSlots.isPending;
+  let hint = null;
+  if (!doctorId || !date) hint = 'Choose a doctor and a date to see times.';
+  else if (waitingForSlots) hint = 'Loading times…';
+  else if (restricted && slots.length === 0 && !startTime) {
+    hint = 'This doctor has no session on that day. Try another date.';
+  }
 
   function onDoctorChange(event) {
     const next = allDoctors.find((d) => d.id === event.target.value);

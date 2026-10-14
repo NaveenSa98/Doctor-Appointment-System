@@ -262,7 +262,7 @@ Conventions for every milestone:
 | `POST /auth/register` (public, rate limited) | `{full_name, email, password}` (password 8-128 chars; no role field, the account is always a `patient`) | 201, same body as login | 409 `email_taken`, 422, 429 |
 | `GET /auth/me` | none | 200 `{id,email,full_name,role,doctor_id}` | 401 |
 | `PATCH /auth/me` | any of `{full_name, email, new_password}`; `email` and `new_password` also need `current_password` | 200 user | 401, 409 `email_taken`, 422 (a wrong `current_password` is a 422 on that field, never a 401) |
-| `DELETE /auth/me` | `{password}` | 204. Patients only; their bookings stay, with `created_by` cleared | 401, 403 (staff), 422 |
+| `DELETE /auth/me` | `{password}` | 204. Patients and doctors; removes only the login (bookings stay, with `created_by` cleared; a doctor's profile stays so the admin can add a new login) | 401, 403 (admin), 422 |
 
 **Admin doctor management** (all admin-only: 401 without a token, 403 for other roles). An `AdminDoctor` is `{id, full_name, specialty, is_active, hospitals:[{id,name}], account:{id,email,is_active}|null, appointment_count}`.
 
@@ -274,6 +274,20 @@ Conventions for every milestone:
 | `PATCH /admin/doctors/{id}` | any of `{full_name, specialty, hospital_ids, is_active}` | 200 `AdminDoctor`. `is_active` also enables/disables the doctor's login | 404, 409 `hospital_in_use` (removing a hospital that has appointments), 422 |
 | `PUT /admin/doctors/{id}/account` | `{email?, password?}`. Both are needed to create the login; either one changes or resets it | 200 `AdminDoctor` | 404, 409 `email_taken`, 422 |
 | `DELETE /admin/doctors/{id}` | none | 204; removes the doctor and their login | 404, 409 `doctor_has_appointments` (any appointment row, even a deleted one: deactivate instead) |
+
+**Weekly sessions** (M12). A session is a recurring slot in *clinic time*: `{id, hospital, weekday (0 = Monday), start_time "HH:MM", end_time "HH:MM", skipped:[{on_date, reason}]}`. Bookable starts are every 30 minutes from `start_time` up to, not including, `end_time`. Clinic time is a fixed offset from UTC (`CLINIC_UTC_OFFSET_MINUTES`, default 0, e.g. 330 for Sri Lanka); it does not follow daylight saving.
+
+| Method + path | Request | Success | Errors |
+|---|---|---|---|
+| `GET /doctors/{id}/slots` (public) | `hospital_id, date_from, date_to` (max 7 days) | 200 `{doctor_id, hospital_id, restricted, slots:[utc starts]}`. `restricted: false` = the doctor has no sessions (the app uses its default 09:00-16:30 grid) | 404, 422 |
+| `GET /doctors/{id}/sessions` | none | 200 `{doctor_id, utc_offset_minutes, sessions:[...]}`. Admin, or that doctor | 401, 403, 404 |
+| `POST /admin/doctors/{id}/sessions` | `{hospital_id, weekday, start_time, end_time}` (half-hour aligned, end after start) | 201 session | 404, 409 `session_overlap` (same doctor, same weekday, any hospital), 422 (incl. a hospital the doctor does not visit) |
+| `PATCH /admin/sessions/{id}` | any of the four fields | 200 session; changing weekday or hospital clears its skipped dates | 404, 409 `session_overlap` / `session_has_appointments`, 422 |
+| `DELETE /admin/sessions/{id}` | none | 204 | 404, 409 `session_has_appointments` |
+| `POST /admin/sessions/{id}/skipped-dates` | `{date, reason?}` (not in the past; must be that session's weekday) | 201 session | 404, 409 `already_skipped` / `session_has_appointments`, 422 |
+| `DELETE /admin/sessions/{id}/skipped-dates/{date}` | none | 200 session | 404 |
+
+`session_has_appointments` means an upcoming, not-cancelled appointment would be left outside every session. **Booking rule:** once a doctor has at least one session, `POST`/`PATCH /appointments` only accepts a `start_time` inside one (at that hospital, on a non-skipped day), else a 422 on `start_time`. A doctor with no sessions is unrestricted, so existing data keeps working. A hospital that has sessions cannot be removed from the doctor (409 `hospital_has_sessions`).
 
 **Patients** (self-registered, role `patient`) can create bookings and list/read **only the bookings they made** (`created_by`); other people's bookings are a 404. They cannot PATCH or DELETE a booking, set a status, or call `/appointments/stats` (403).
 | `GET /hospitals` (public) | `doctor_id?` | 200 `[{id, name}]` | 422 |
