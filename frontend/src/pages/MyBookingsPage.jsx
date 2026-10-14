@@ -4,9 +4,7 @@ import { listAppointments } from '../api/appointments';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import Spinner from '../components/Spinner';
-import StatusBadge from '../components/StatusBadge';
-import { TYPES } from '../components/AppointmentForm';
-import { formatDateTime } from '../utils/datetime';
+import BookingCard from '../components/BookingCard';
 
 const INACTIVE = ['cancelled', 'completed', 'no_show'];
 
@@ -19,23 +17,6 @@ export function splitBookings(items, now = Date.now()) {
     .filter((a) => !upcoming.includes(a))
     .sort((a, b) => Date.parse(b.start_time) - Date.parse(a.start_time));
   return { upcoming, past };
-}
-
-function BookingCard({ appointment: a }) {
-  return (
-    <li className="booking">
-      <div>
-        <strong>{formatDateTime(a.start_time)}</strong>
-        <span className="sub">
-          {a.doctor.full_name}, {a.doctor.specialty}
-        </span>
-        <span className="sub">
-          {a.hospital.name} · {TYPES[a.appointment_type] ?? a.appointment_type} · for {a.patient_name}
-        </span>
-      </div>
-      <StatusBadge status={a.status} />
-    </li>
-  );
 }
 
 function Section({ title, items }) {
