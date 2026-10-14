@@ -264,6 +264,17 @@ Conventions for every milestone:
 | `PATCH /auth/me` | any of `{full_name, email, new_password}`; `email` and `new_password` also need `current_password` | 200 user | 401, 409 `email_taken`, 422 (a wrong `current_password` is a 422 on that field, never a 401) |
 | `DELETE /auth/me` | `{password}` | 204. Patients only; their bookings stay, with `created_by` cleared | 401, 403 (staff), 422 |
 
+**Admin doctor management** (all admin-only: 401 without a token, 403 for other roles). An `AdminDoctor` is `{id, full_name, specialty, is_active, hospitals:[{id,name}], account:{id,email,is_active}|null, appointment_count}`.
+
+| Method + path | Request | Success | Errors |
+|---|---|---|---|
+| `GET /admin/doctors` | none | 200 `[AdminDoctor]` (active and inactive) | |
+| `POST /admin/doctors` | `{full_name, specialty, hospital_ids (>=1), account?:{email, password}}` | 201 + `Location`, `AdminDoctor` | 409 `email_taken`, 422 (incl. unknown hospital on `hospital_ids`) |
+| `GET /admin/doctors/{id}` | none | 200 `AdminDoctor` | 404 |
+| `PATCH /admin/doctors/{id}` | any of `{full_name, specialty, hospital_ids, is_active}` | 200 `AdminDoctor`. `is_active` also enables/disables the doctor's login | 404, 409 `hospital_in_use` (removing a hospital that has appointments), 422 |
+| `PUT /admin/doctors/{id}/account` | `{email?, password?}`. Both are needed to create the login; either one changes or resets it | 200 `AdminDoctor` | 404, 409 `email_taken`, 422 |
+| `DELETE /admin/doctors/{id}` | none | 204; removes the doctor and their login | 404, 409 `doctor_has_appointments` (any appointment row, even a deleted one: deactivate instead) |
+
 **Patients** (self-registered, role `patient`) can create bookings and list/read **only the bookings they made** (`created_by`); other people's bookings are a 404. They cannot PATCH or DELETE a booking, set a status, or call `/appointments/stats` (403).
 | `GET /hospitals` (public) | `doctor_id?` | 200 `[{id, name}]` | 422 |
 | `GET /doctors` (public) | `hospital_id?` | 200 `[{id, full_name, specialty, hospitals:[{id,name}]}]` (active only) | 422 |

@@ -6,6 +6,7 @@ import './styles/forms.css';
 import './styles/extras.css';
 import './styles/signin.css';
 import './styles/account.css';
+import './styles/admin.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

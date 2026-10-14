@@ -70,6 +70,7 @@ export const handlers = [
     return unauthorized();
   }),
   http.get(`${API}/appointments`, () => HttpResponse.json(emptyPage())),
+  http.get(`${API}/admin/doctors`, () => HttpResponse.json([])),
   http.get(`${API}/appointments/stats`, () => HttpResponse.json(makeStats())),
   http.get(`${API}/doctors`, () => HttpResponse.json([doctor, doctor2])),
   http.get(`${API}/hospitals`, () => HttpResponse.json([hospital, hospital2])),

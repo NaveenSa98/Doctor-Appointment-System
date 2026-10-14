@@ -1,6 +1,7 @@
 """Database access for hospitals."""
 
 import uuid
+from collections.abc import Sequence
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -17,3 +18,8 @@ def list_all(session: Session, doctor_id: uuid.UUID | None = None) -> list[Hospi
         )
         statement = statement.where(Hospital.id.in_(visited))
     return list(session.scalars(statement))
+
+
+def get_many(session: Session, hospital_ids: Sequence[uuid.UUID]) -> list[Hospital]:
+    """The hospitals with these ids (missing ids are simply absent from the result)."""
+    return list(session.scalars(select(Hospital).where(Hospital.id.in_(hospital_ids))))
