@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import ColumnElement, func, select
+from sqlalchemy import ColumnElement, exists, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
@@ -167,3 +167,28 @@ def taken_slots(
         .order_by(Appointment.start_time)
     )
     return list(session.scalars(statement))
+
+
+def count_live_by_doctor(session: Session) -> dict[uuid.UUID, int]:
+    """Live (not soft-deleted) appointments per doctor."""
+    statement = (
+        select(Appointment.doctor_id, func.count())
+        .where(Appointment.deleted_at.is_(None))
+        .group_by(Appointment.doctor_id)
+    )
+    return {doctor_id: count for doctor_id, count in session.execute(statement).tuples()}
+
+
+def has_any_for_doctor(session: Session, doctor_id: uuid.UUID) -> bool:
+    """True if any appointment row (even a soft-deleted one) points at the doctor."""
+    return bool(session.scalar(select(exists().where(Appointment.doctor_id == doctor_id))))
+
+
+def hospitals_in_use(
+    session: Session, doctor_id: uuid.UUID, hospital_ids: Sequence[uuid.UUID]
+) -> set[uuid.UUID]:
+    """Which of these hospitals have any appointment row for the doctor (even a deleted one)."""
+    statement = select(Appointment.hospital_id).where(
+        Appointment.doctor_id == doctor_id, Appointment.hospital_id.in_(hospital_ids)
+    )
+    return set(session.scalars(statement))
