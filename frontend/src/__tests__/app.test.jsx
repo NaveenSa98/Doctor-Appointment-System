@@ -23,7 +23,7 @@ describe('public pages', () => {
 describe('ProtectedRoute', () => {
   it('redirects an anonymous visitor from staff pages to /login', async () => {
     renderApp('/appointments');
-    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
   });
 
   it('lets a signed-in user through and shows the user menu', async () => {

@@ -4,6 +4,7 @@ import App from './App';
 import './styles/global.css';
 import './styles/forms.css';
 import './styles/extras.css';
+import './styles/signin.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
