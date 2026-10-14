@@ -108,9 +108,13 @@ def update_profile(session: Session, user: User, data: ProfileUpdate) -> User:
 
 
 def delete_account(session: Session, user: User, password: str) -> None:
-    """Delete a patient's own account. Their past bookings stay, with the link cleared."""
-    if user.role != UserRole.PATIENT:
-        raise ForbiddenError("Ask an administrator to remove this account")
+    """Delete your own login (patients and doctors; an admin must not lock everyone out).
+
+    Bookings stay, with the link cleared. A doctor's profile stays too, so the admin can
+    give them a new login later.
+    """
+    if user.role == UserRole.ADMIN:
+        raise ForbiddenError("Administrator accounts cannot be deleted here")
     if not verify_password(password, user.password_hash):
         raise ValidationFailed("password", "is incorrect")
     user_repository.delete(session, user)

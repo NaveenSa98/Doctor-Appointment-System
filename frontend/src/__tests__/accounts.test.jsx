@@ -226,10 +226,24 @@ describe('account settings', () => {
     expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument();
   });
 
-  it('does not offer account deletion to staff', async () => {
+  it('lets a doctor delete their login and explains the profile stays', async () => {
+    sessionStorage.setItem('am.token', 'doctor-token');
+    server.use(http.delete(`${API}/auth/me`, () => new HttpResponse(null, { status: 204 })));
+    const user = userEvent.setup();
+    renderApp('/account');
+    expect(await screen.findByText(/doctor profile and all bookings stay/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Delete my account' }));
+    await user.type(within(screen.getByRole('dialog')).getByLabelText('Password'), 'long-enough-1');
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete account' }));
+    await waitFor(() => expect(location()).toBe('/'));
+    expect(sessionStorage.getItem('am.token')).toBeNull();
+  });
+
+  it('does not offer account deletion to an admin', async () => {
     sessionStorage.setItem('am.token', 'test-token');
     renderApp('/account');
-    expect(await screen.findByText(/ask an administrator/i)).toBeInTheDocument();
+    expect(await screen.findByText(/cannot be deleted here/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Delete my account' })).not.toBeInTheDocument();
   });
 });

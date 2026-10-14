@@ -262,7 +262,7 @@ Conventions for every milestone:
 | `POST /auth/register` (public, rate limited) | `{full_name, email, password}` (password 8-128 chars; no role field, the account is always a `patient`) | 201, same body as login | 409 `email_taken`, 422, 429 |
 | `GET /auth/me` | none | 200 `{id,email,full_name,role,doctor_id}` | 401 |
 | `PATCH /auth/me` | any of `{full_name, email, new_password}`; `email` and `new_password` also need `current_password` | 200 user | 401, 409 `email_taken`, 422 (a wrong `current_password` is a 422 on that field, never a 401) |
-| `DELETE /auth/me` | `{password}` | 204. Patients only; their bookings stay, with `created_by` cleared | 401, 403 (staff), 422 |
+| `DELETE /auth/me` | `{password}` | 204. Patients and doctors; removes only the login (bookings stay, with `created_by` cleared; a doctor's profile stays so the admin can add a new login) | 401, 403 (admin), 422 |
 
 **Admin doctor management** (all admin-only: 401 without a token, 403 for other roles). An `AdminDoctor` is `{id, full_name, specialty, is_active, hospitals:[{id,name}], account:{id,email,is_active}|null, appointment_count}`.
 

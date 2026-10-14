@@ -117,7 +117,8 @@ function PasswordForm() {
 }
 
 function DeleteAccount() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const doctor = user.role === 'doctor';
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
@@ -146,8 +147,9 @@ function DeleteAccount() {
     <section className="card settings-card danger-zone" aria-labelledby="delete-title">
       <h2 id="delete-title">Delete account</h2>
       <p className="muted">
-        This removes your login and personal settings. Bookings you already made stay on the
-        clinic&rsquo;s schedule.
+        {doctor
+          ? 'This removes your login. Your doctor profile and all bookings stay, and an administrator can give you a new login later.'
+          : 'This removes your login and personal settings. Bookings you already made stay on the clinic’s schedule.'}
       </p>
       <button type="button" className="btn btn-danger-outline" onClick={() => setOpen(true)}>
         Delete my account
@@ -168,7 +170,7 @@ function DeleteAccount() {
   );
 }
 
-/** Account settings. Staff accounts are managed by an administrator, so they cannot delete theirs. */
+/** Account settings. Patients and doctors can delete their login; admins cannot. */
 export default function AccountPage() {
   const { user } = useAuth();
   return (
@@ -178,10 +180,10 @@ export default function AccountPage() {
         <ProfileForm />
         <EmailForm />
         <PasswordForm />
-        {user.role === 'patient' ? (
-          <DeleteAccount />
+        {user.role === 'admin' ? (
+          <p className="muted">Administrator accounts cannot be deleted here.</p>
         ) : (
-          <p className="muted">To remove this account, please ask an administrator.</p>
+          <DeleteAccount />
         )}
       </div>
     </div>

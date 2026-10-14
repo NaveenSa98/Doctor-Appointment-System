@@ -7,7 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Doctor, Hospital
+from app.models import Doctor, Hospital, UserRole
 from tests.api.helpers import auth_header, booking, future_slot
 from tests.db.factories import make_appointment, make_doctor, make_hospital, make_user
 
@@ -255,7 +255,47 @@ def test_the_email_can_be_used_again_after_deleting(db_client: TestClient) -> No
     assert register(db_client).status_code == 201
 
 
-def test_staff_cannot_delete_their_own_account(db_client: TestClient, db_session: Session) -> None:
+def test_an_admin_cannot_delete_their_own_account(
+    db_client: TestClient, db_session: Session
+) -> None:
     admin = make_user(db_session, password=PASSWORD)
     response = delete_account(db_client, auth_header(admin), PASSWORD)
     assert response.status_code == 403
+    assert db_client.get(f"{AUTH}/me", headers=auth_header(admin)).status_code == 200
+
+
+def test_a_doctor_can_delete_their_login_but_the_profile_stays(
+    db_client: TestClient, db_session: Session, world: World
+) -> None:
+    doctor_user = make_user(
+        db_session,
+        role=UserRole.DOCTOR,
+        doctor=world.doctor,
+        email="doc@clinic.test",
+        password=PASSWORD,
+    )
+    make_appointment(
+        db_session, world.doctor, world.hospital, future_slot(3), created_by=doctor_user.id
+    )
+
+    wrong = delete_account(db_client, auth_header(doctor_user), "wrong-password")
+    assert wrong.status_code == 422
+    assert delete_account(db_client, auth_header(doctor_user), PASSWORD).status_code == 204
+
+    login = db_client.post(f"{AUTH}/login", json={"email": "doc@clinic.test", "password": PASSWORD})
+    assert login.status_code == 401
+
+    admin = make_user(db_session)
+    row = db_client.get(
+        f"/api/v1/admin/doctors/{world.doctor.id}", headers=auth_header(admin)
+    ).json()
+    assert row["account"] is None
+    assert row["is_active"] is True
+    assert row["appointment_count"] == 1
+
+    restored = db_client.put(
+        f"/api/v1/admin/doctors/{world.doctor.id}/account",
+        json={"email": "doc@clinic.test", "password": PASSWORD},
+        headers=auth_header(admin),
+    )
+    assert restored.status_code == 200  # the admin can give them a new login
