@@ -40,7 +40,6 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
-        working-directory: backend
 
       - name: uv sync
         run: uv sync --frozen
