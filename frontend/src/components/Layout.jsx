@@ -1,15 +1,15 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/AuthContext';
+import logoUrl from '../../logo/Logo.jpeg';
 
 function Logo() {
   return (
     <Link to="/" className="brand">
+      {/* The full logo is a square with the name underneath, so show only its emblem here. */}
       <span className="brand-mark" aria-hidden="true">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+        <img src={logoUrl} alt="" />
       </span>
-      Appointment Manager
+      DocEase
     </Link>
   );
 }
@@ -25,7 +25,7 @@ export default function Layout() {
           <Logo />
           <nav className="nav" aria-label="Main">
             <NavLink to="/" end>Home</NavLink>
-            <NavLink to="/book">Book a visit</NavLink>
+            <NavLink to="/book">Doctor Channelling</NavLink>
             {user && <NavLink to="/appointments">Appointments</NavLink>}
           </nav>
           <div className="header-actions">

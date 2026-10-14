@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import logoUrl from '../../logo/Logo.jpeg';
 
 const STEPS = [
   { title: 'Choose a hospital and doctor', text: 'Only doctors who visit the hospital you pick are listed.' },
@@ -10,13 +11,13 @@ export default function HomePage() {
   return (
     <div className="container hero">
       <section className="hero-copy">
-        <h1>Book your doctor visit in under a minute.</h1>
+        <img className="hero-logo" src={logoUrl} alt="DocEase" />
+        <h1>Your Health, Your Time, Our Priority.</h1>
         <p className="lead">
-          Pick a hospital, choose a doctor, and grab a free slot. Times are shown in your local time zone.
+          A user-friendly doctor channelling system that allows patients to search for doctors, check availability, book appointments, and manage their reservations online.
         </p>
         <div className="hero-actions">
           <Link to="/book" className="btn btn-primary btn-lg">Book an appointment</Link>
-          <Link to="/login" className="btn btn-secondary btn-lg">Staff sign in</Link>
         </div>
       </section>
       <section className="card steps" aria-labelledby="how-it-works">
