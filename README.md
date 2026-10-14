@@ -37,7 +37,23 @@ The interface is clean, calm and mobile friendly.
 - **Sign in / Sign up:** a simple split layout with a show/hide password option.
 - **Dashboards:** appointment list with search, filters, status badges and a day view. Admin and doctor pages share the same look.
 
-Add screenshots to `docs/screenshots/` and link them here if you want them shown on GitHub.
+## Screenshots
+
+### Home Page
+
+![Home Page](docs/screenshots/home-page.png)
+
+### Admin Dashboard
+
+![Admin Dashboard](docs/screenshots/admin-dash.png)
+
+### Doctor Dashboard
+
+![Doctor Dashboard](docs/screenshots/admin-D.png)
+
+### Booking Page
+
+![Booking Page](docs/screenshots/booking-p.png)
 
 ## Getting started
 
@@ -54,7 +70,7 @@ uv run python -m scripts.seed  # optional demo data
 uv run uvicorn app.main:create_app --factory --reload --no-access-log
 ```
 
-The API runs at http://localhost:8000.
+The API runs at <http://localhost:8000>.
 
 Main settings in `backend/.env`:
 
@@ -74,7 +90,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. The dev server forwards `/api` to the backend.
+Open <http://localhost:5173>. The dev server forwards `/api` to the backend.
 
 ### Demo logins
 
