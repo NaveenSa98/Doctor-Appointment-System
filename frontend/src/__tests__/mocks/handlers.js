@@ -71,6 +71,7 @@ export const handlers = [
   }),
   http.get(`${API}/appointments`, () => HttpResponse.json(emptyPage())),
   http.get(`${API}/admin/doctors`, () => HttpResponse.json([])),
+  http.get(`${API}/patients`, () => HttpResponse.json(emptyPage())),
   http.get(`${API}/doctors/:id/slots`, ({ params, request }) =>
     HttpResponse.json({
       doctor_id: params.id,
